@@ -14,7 +14,7 @@ def quantimage(image,k):
     final_img = center[label.flatten()]
     final_img = final_img.reshape(image.shape)
     return (final_img, image)
-image = cv2.imread('rubiks.jpg')
+image = cv2.imread('images/rubiks.jpg')
 
 
 kmeans,image = quantimage(image,10)
