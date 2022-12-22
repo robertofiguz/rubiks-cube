@@ -1,5 +1,6 @@
 import cv2
 import sys
+import json
 import numpy as np
 from imutils import contours
 from collections import namedtuple
@@ -31,7 +32,7 @@ def detect_cube_face(camera):
             continue
 
         perimeter = cv2.arcLength(contour, True)
-        if cv2.norm(((perimeter / 4) * (perimeter / 4)) - area) < SQUARE_THRESHOLD:
+        if cv2.norm((perimeter / 4) ** 2 - area) < SQUARE_THRESHOLD:
             #if it is a square form
             squares.append(contour)
 
@@ -56,42 +57,29 @@ def detect_cube_face(camera):
             square_images.append(SQUARE(camera[y:y+h, x:x+w], x, y, w, h))
         cv2.drawContours(camera, [square], 0, (0, 255, 0), 2)
     
+    with open("resources/color-calibration.json", "r") as f:
+        color_calibration = json.load(f)
 
     for square in square_images:
-        color = detect_square_color(square)
+        color = detect_square_color(square, color_calibration)
         square_colors.append(color)
+        cv2.circle(camera, (square.x + square.w // 2, square.y + square.h // 2), 5, (0, 0, 255), -1)
         cv2.putText(camera, color, (square.x, square.y), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
     square_colors = square_colors[::-1]
     
     return camera, face
 
-# TODO: This function needs improvement
-def detect_square_color(square):
-    #FIXME: Use calibrated values for the range of colors
-    hsv = cv2.cvtColor(square.image, cv2.COLOR_BGR2HSV)
-    h, s, v = cv2.split(hsv)
-    h = h.flatten()
-    s = s.flatten()
-    v = v.flatten()
-    h = h[h > 0]
-    s = s[s > 0]
-    v = v[v > 0]
-    h = np.mean(h)
-    s = np.mean(s)
-    v = np.mean(v)
-    if h < 10:
-        return 'R'
-    elif 10 < h < 25:
-        return 'O'
-    elif 25 < h < 35:
-        return 'Y'
-    elif 35 < h < 77:
-        return 'G'
-    elif 77 < h < 99:
-        return 'B'
-    elif 99 < h < 124:
-        return 'W'
-    return 'NA'
+def detect_square_color(square, color_ranges):
+
+    #FIXME: Change to predominant color instead of the center pixel color
+    b, g, r = square.image[square.w // 2, square.h // 2]
+
+    for color, color_range in color_ranges.items():
+        if color_range['B']['min'] < b < color_range['B']['max'] \
+            and color_range['G']['min'] < g < color_range['G']['max'] \
+                and color_range['R']['min'] < r < color_range['R']['max']:
+            return color
+    return "unk"
 
 def init_windows():
     cv2.namedWindow(FACE_WINDOW)
@@ -109,7 +97,7 @@ def main():
     init_windows()
 
     video = cv2.VideoCapture(0)
-    is_ok, bgr_image_input = video.read()
+    is_ok, camera = video.read()
     
     if not is_ok:
         print("Cannot read video source")
