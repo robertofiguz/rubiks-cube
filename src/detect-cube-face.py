@@ -3,63 +3,49 @@ import sys
 import numpy as np
 from imutils import contours
 
+SQUARE_THRESHOLD = 150
 
-def mask_cube_face(camera):
-    ''' Adapted from: https://stackoverflow.com/questions/24916870/python-opencv-rubiks-cube-solver-color-extraction
-        Detects the cube face and returns the masked image
+def detect_cube_face(camera):
+    ''' Detects the cube face and square colors
     '''
-    # Define the color ranges
-    colors = {
-        'white': ([0, 0, 168], [172, 111, 255]),      
-        'blue': ([69, 120, 100], [179, 255, 255]),    
-        'yellow': ([21, 110, 117], [45, 255, 255]),  
-        'orange': ([0, 110, 125], [17, 255, 255]),    
-        'red': ([0, 50, 50], [10, 255, 255]),         
-        'green': ([40, 40, 40], [70, 255, 255])       
-        }
+    face_detected = False
 
-    image = cv2.cvtColor(camera, cv2.COLOR_BGR2HSV)
-    mask = np.zeros(image.shape, dtype=np.uint8)
+    gray = cv2.cvtColor(camera,cv2.COLOR_BGR2GRAY)
+    binary = cv2.adaptiveThreshold(gray,20,cv2.ADAPTIVE_THRESH_GAUSSIAN_C,cv2.THRESH_BINARY_INV,5,0)
 
-    # Remove noise from the squares
-    open_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (7,7))
-    close_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (5,5))
+    try:
+        _, contours, hierarchy = cv2.findContours(binary,cv2.RETR_TREE,cv2.CHAIN_APPROX_NONE)
+    except ValueError:
+        contours, hierarchy = cv2.findContours(binary,cv2.RETR_TREE,cv2.CHAIN_APPROX_NONE)
+    
+    squares = []
+    for contour in contours:
+        area = cv2.contourArea(contour)
 
-    # Build a mask based on the color ranges
-    for color, (lower, upper) in colors.items():
-        lower = np.array(lower, dtype=np.uint8)
-        upper = np.array(upper, dtype=np.uint8)
-        color_mask = cv2.inRange(image, lower, upper)
-        color_mask = cv2.morphologyEx(color_mask, cv2.MORPH_OPEN, open_kernel, iterations=1)
-        color_mask = cv2.morphologyEx(color_mask, cv2.MORPH_CLOSE, close_kernel, iterations=5)
+        if not (1000<area<3000):
+            continue
 
-        # Merging all calculated masks TODO: separate them to detect each color
-        color_mask = cv2.merge([color_mask, color_mask, color_mask])
-        mask = cv2.bitwise_or(mask, color_mask)
+        perimeter = cv2.arcLength(contour, True)
+        if cv2.norm(((perimeter / 4) * (perimeter / 4)) - area) < SQUARE_THRESHOLD:
+            #if it is a square form
+            squares.append(contour)
 
-    gray = cv2.cvtColor(mask, cv2.COLOR_BGR2GRAY)
-    cnts = cv2.findContours(gray, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-    cnts = cnts[0] if len(cnts) == 2 else cnts[1]
-    # Sort all contours from top-to-bottom or bottom-to-top
-    (cnts, _) = contours.sort_contours(cnts, method="top-to-bottom")
+    if len(squares) != 9:
+        if len(squares) == 0:
+            cv2.putText(camera, "No face detected", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
+        elif len(squares) > 9:
+            cv2.putText(camera, "Detecting more than 9 squares. \nTry to remove noise in the background", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
+        elif len(squares) < 9:
+            cv2.putText(camera, "Not able to detect all the 9 squares", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 215, 255), 2)
+    else:
+        face_detected = True
+        cv2.putText(camera, "Face detected", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+    for square in squares:
+        cv2.drawContours(camera, [square], 0, (0, 255, 0), 2)
 
-    # Take each row of 3 and sort from left-to-right or right-to-left
-    cube_rows = []
-    row = []
-    for (i, c) in enumerate(cnts, 1):
-        row.append(c)
-        if i % 3 == 0:  
-            (cnts, _) = contours.sort_contours(row, method="left-to-right")
-            cube_rows.append(cnts)
-            row = []
+    face = camera if face_detected else None
 
-    # Draw rectangles around the squares
-    for row in cube_rows:
-        for c in row:
-            x,y,w,h = cv2.boundingRect(c)
-            cv2.rectangle(camera, (x, y), (x + w, y + h), (36,255,12), 2)
-    return camera, mask
-
+    return camera, face
 
 def main():
     video = cv2.VideoCapture(0)
@@ -72,36 +58,22 @@ def main():
     while True:
         _, camera = video.read()
 
-        camera = cv2.imread("resources/cube-face.jpg")
+        # camera = cv2.imread("resources/cube-face.jpg")
 
-        camera, mask = mask_cube_face(camera)
-                
-        # gray = cv2.cvtColor(camera,cv2.COLOR_BGR2GRAY)
-
-        # binary = cv2.adaptiveThreshold(gray,20,cv2.ADAPTIVE_THRESH_GAUSSIAN_C,cv2.THRESH_BINARY_INV,5,0)
-
+        camera, face = detect_cube_face(camera)
 
         # try:
-        #  _, contours, hierarchy = cv2.findContours(binary,cv2.RETR_TREE,cv2.CHAIN_APPROX_NONE)
-        # except:
-        #     contours, hierarchy = cv2.findContours(binary,cv2.RETR_TREE,cv2.CHAIN_APPROX_NONE)
+        #     camera, mask = mask_cube_face(camera)
+        # except ValueError:
+        #     print("No face detected")
+        #     continue    
 
-        # for contour in contours:
-        #     area = cv2.contourArea(contour)
-        #     if not (area < 1500 and area > 1000):
-        #         continue
-        #     perimeter = cv2.arcLength(contour, True)
-        #     epsilon = 0.01 * perimeter
-        #     approx = cv2.approxPolyDP(contour, epsilon, True)
-        #     hull = cv2.convexHull(contour)
-        #     x, y, w, h = cv2.boundingRect(contour)
-
-        #     cv2.drawContours(camera,[contour],0,(255, 255, 0),2)
-        #     cv2.drawContours(camera, [approx], 0, (255, 255, 0), 2)
 
         cv2.imshow("camera", camera)
+        if face is not None:
+            cv2.imshow("face", face)
         #cv2.imshow("binary", binary)
-        cv2.imshow("mask", mask)
+        #cv2.imshow("mask", mask)
         key_pressed = cv2.waitKey(1) & 0xFF
         if key_pressed == 27 or key_pressed == ord('q'):
             break
