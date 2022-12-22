@@ -69,11 +69,26 @@ def detect_cube_face(camera):
     
     return camera, face
 
+def get_dominant_color(image):
+    ''' Returns the dominant color of the square
+    '''
+
+    #FIXME: Getting better results without using this function
+
+    data = np.reshape(image, (-1,3))
+    data = np.float32(data)
+
+    criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 10, 1.0)
+    flags = cv2.KMEANS_RANDOM_CENTERS
+    compactness,labels,centers = cv2.kmeans(data,1,None,criteria,10,flags)
+
+    dominant_color = centers[0].astype(np.int32)
+
+    return dominant_color[0].astype(np.int32), dominant_color[1].astype(np.int32), dominant_color[2].astype(np.int32)
+
 def detect_square_color(square, color_ranges):
-
-    #FIXME: Change to predominant color instead of the center pixel color
     b, g, r = square.image[square.w // 2, square.h // 2]
-
+    
     for color, color_range in color_ranges.items():
         if color_range['B']['min'] < b < color_range['B']['max'] \
             and color_range['G']['min'] < g < color_range['G']['max'] \
