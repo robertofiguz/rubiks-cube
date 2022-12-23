@@ -12,6 +12,7 @@ WEBCAM_WINDOW = "camera"
 def detect_cube_face(camera):
     ''' Detects the cube face and square colors
     '''
+    SQUARE = namedtuple('SQUARE', ['image','x', 'y', 'w', 'h'])
     face_detected = False
 
     gray = cv2.cvtColor(camera,cv2.COLOR_BGR2GRAY)
@@ -49,7 +50,6 @@ def detect_cube_face(camera):
     
     face = camera if face_detected else None
     
-    SQUARE = namedtuple('SQUARE', ['image','x', 'y', 'w', 'h'])
     for square in squares:
         if face is not None:
             # Detect the color of the square
@@ -60,14 +60,16 @@ def detect_cube_face(camera):
     with open("resources/color-calibration.json", "r") as f:
         color_calibration = json.load(f)
 
+    count = 1
+    square_images = sorted(square_images, key=lambda square: (square.y, square.x), reverse=False)
     for square in square_images:
         color = detect_square_color(square, color_calibration)
         square_colors.append(color)
         cv2.circle(camera, (square.x + square.w // 2, square.y + square.h // 2), 5, (0, 0, 255), -1)
-        cv2.putText(camera, color, (square.x, square.y), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
-    square_colors = square_colors[::-1]
+        cv2.putText(camera, str(count)+'-'+color, (square.x, square.y), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
+        count +=1
     
-    return camera, face
+    return camera, face, square_colors
 
 def get_dominant_color(image):
     ''' Returns the dominant color of the square
@@ -123,12 +125,19 @@ def main():
 
         # camera = cv2.imread("resources/cube-face.jpg")
 
-        camera, face = detect_cube_face(camera)
+        camera, face, squares = detect_cube_face(camera)
 
 
         cv2.imshow(WEBCAM_WINDOW, camera)
         if face is not None:
             cv2.imshow(FACE_WINDOW, face)
+            if "unk"  in squares:
+                continue
+            key_pressed = cv2.waitKey(0) & 0xFF
+            if key_pressed == 27 or key_pressed == ord('q'):
+                continue
+            elif key_pressed == 13: #ENTER
+                print("Saved Face: ", squares)
 
         key_pressed = cv2.waitKey(1) & 0xFF
         if key_pressed == 27 or key_pressed == ord('q'):
