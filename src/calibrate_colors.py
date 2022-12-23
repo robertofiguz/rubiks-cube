@@ -8,6 +8,8 @@ import numpy as np
 import json
 from functools import partial
 
+COLORS = {"White": (255, 255, 255), "Yellow": (0, 255, 255), "Orange": (0, 165, 255), "Red": (0, 0, 255), "Green": (0, 255, 0), "Blue": (255, 0, 0)}
+
 
 def getLimits(window_name):
     min_b = cv2.getTrackbarPos('min B', window_name)
@@ -110,7 +112,7 @@ def main():
         _, image = capture.read()
         image = cv2.flip(image, 1)
         img_dict['image'] = image
-        cv2.putText(image, f"Let's Calibrate {colors[color]} color", (20, 20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
+        cv2.putText(image, f"Let's Calibrate {colors[color]} color", (20, 20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, COLORS[colors[color]], 2)
         cv2.imshow(name_original, image)
 
 
