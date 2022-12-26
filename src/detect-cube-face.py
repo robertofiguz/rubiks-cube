@@ -1,10 +1,20 @@
 import cv2
 import sys
 import json
+import kociemba
 import numpy as np
 from imutils import contours
 from collections import namedtuple
 
+
+TEXT_PROMPTS = {1: "Show the white face with the green on top", 
+                2: "Rotate the cube 90 to the right",
+                3: "Rotate the cube 90 to the right",
+                4: "Rotate the cube 90 to the right",
+                5: "Rotate the cube 90 to the right and 90 up",
+                6: "Rotate the cube 180 down",
+                7: ""}
+FACES = {}
 SQUARE_THRESHOLD = 150
 FACE_WINDOW = "face"
 WEBCAM_WINDOW = "camera"
@@ -119,7 +129,7 @@ def main():
     if not is_ok:
         print("Cannot read video source")
         sys.exit()
-    
+
     while True:
         _, camera = video.read()
 
@@ -128,16 +138,38 @@ def main():
         camera, face, squares = detect_cube_face(camera)
 
 
+        cv2.putText(camera, TEXT_PROMPTS[len(FACES)+1], (20, camera.shape[0]-20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0), 2)
         cv2.imshow(WEBCAM_WINDOW, camera)
-        if face is not None:
+        if face is not None and len(FACES) < 6:
             cv2.imshow(FACE_WINDOW, face)
-            if "unk"  in squares:
-                continue
+            # Uncomment this lines
+            # if "unk"  in squares:
+            #     continue
             key_pressed = cv2.waitKey(0) & 0xFF
             if key_pressed == 27 or key_pressed == ord('q'):
                 continue
             elif key_pressed == 13: #ENTER
-                print("Saved Face: ", squares)
+                FACES[squares[4]] = squares
+                print(f"Saved {squares[4]} Face: ", squares)
+        elif face is not None: # The cube is detected
+            face_background = np.zeros((480, 640, 3), np.uint8)
+            cv2.putText(face_background, "The cube was fully detected", (20, 20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
+            cv2.imshow(FACE_WINDOW, face)
+
+            cube_string = ("".join(FACES["G"]) + "".join(FACES["R"]) + "".join(FACES["W"]) + "".join(FACES["O"]) + "".join(FACES["Y"]) + "".join(FACES["B"]))
+            cube_string.replace("G", "U")
+            cube_string.replace("R", "R")
+            cube_string.replace("W", "F")
+            cube_string.replace("O", "L")
+            cube_string.replace("Y", "B")
+            cube_string.replace("B", "D")
+            print("Solving the cube...")
+
+            print(kociemba.solve(cube_string))
+
+            sys.exit()
+
+
 
         key_pressed = cv2.waitKey(1) & 0xFF
         if key_pressed == 27 or key_pressed == ord('q'):
