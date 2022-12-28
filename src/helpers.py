@@ -4,8 +4,23 @@
 
 import math
 
+prominent_color_palette = {
+    'red'   : (0, 0, 255),
+    'orange': (0, 130, 255),
+    'blue'  : (255, 0, 0),
+    'green' : (0, 255, 0),
+    'white' : (255, 255, 255),
+    'yellow': (0, 255, 255)
+}
 
-
+instructions = {
+    'white': 'Show the white face with the green on top',
+    'orange': 'Rotate the cube 90 to the right',
+    'yellow': 'Rotate the cube 90 to the right',
+    'red': 'Rotate the cube 90 to the right',
+    'blue': 'Rotate the cube 90 to the right and 90 up',
+    'green': 'Rotate the cube 180 down'
+}
 # Taken from https://stackoverflow.com/a/16020102
 def bgr2lab(inputColor):
     """Convert BGR to LAB."""

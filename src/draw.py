@@ -1,5 +1,6 @@
 import cv2
 import numpy as np
+import copy
 def draw_2d_cube_state(image, faces):
     """
     We're gonna display the visualization like so:
@@ -38,6 +39,7 @@ def draw_2d_cube_state(image, faces):
     for face in faces.values():
         cube_simple[grid[face.name][1],grid[face.name][0]] = face.face
     
+
  #draw a 4x3 grid
     for i in grid:
         x = grid[i][0]
