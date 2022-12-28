@@ -1,3 +1,4 @@
+from copy import deepcopy
 import cv2
 import sys
 import json
@@ -5,7 +6,7 @@ import kociemba
 import numpy as np
 from imutils import contours
 from collections import namedtuple
-
+import animate_cube as animate
 
 TEXT_PROMPTS = {1: "Show the white face with the green on top", 
                 2: "Rotate the cube 90 to the right",
@@ -140,6 +141,7 @@ def main():
 
         cv2.putText(camera, TEXT_PROMPTS[len(FACES)+1], (20, camera.shape[0]-20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0), 2)
         cv2.imshow(WEBCAM_WINDOW, camera)
+        FACES = ["F", "R", "B", "L", "U", "D"]
         if face is not None and len(FACES) < 6:
             cv2.imshow(FACE_WINDOW, face)
             # Uncomment this lines
@@ -157,18 +159,20 @@ def main():
             cv2.imshow(FACE_WINDOW, face)
 
             cube_string = ("".join(FACES["G"]) + "".join(FACES["R"]) + "".join(FACES["W"]) + "".join(FACES["O"]) + "".join(FACES["Y"]) + "".join(FACES["B"]))
-            cube_string.replace("G", "U")
-            cube_string.replace("R", "R")
-            cube_string.replace("W", "F")
-            cube_string.replace("O", "L")
-            cube_string.replace("Y", "B")
-            cube_string.replace("B", "D")
+
+            cube_string = "GGGGGGGGGRRRRRRRRRWWWWWWWWWBBBBBBBBBOOOOOOOOOYYYYYYYYY"
+
+            kociemba_string = deepcopy(cube_string)
+            kociemba_string.replace("G", "U")
+            kociemba_string.replace("R", "R")
+            kociemba_string.replace("W", "F")
+            kociemba_string.replace("O", "L")
+            kociemba_string.replace("Y", "B")
+            kociemba_string.replace("B", "D")
+
             print("Solving the cube...")
-
-            print(kociemba.solve(cube_string))
-
-            sys.exit()
-
+            solution = kociemba.solve(kociemba_string)
+            animate.main(cube_string, solution)
 
 
         key_pressed = cv2.waitKey(1) & 0xFF
