@@ -1,9 +1,11 @@
+import sys
 import cv2
 import time
 from predict import predicted_color
 import numpy as np
 from draw import draw_2d_cube_state
 import helpers
+import kociemba
 #from rubik_solver import utils
 class Face:
     def find_contours(self, dilatedFrame):
@@ -104,10 +106,9 @@ class Face:
         self.face = [[None,None,None],
                      [None,None,None],
                      [None,None,None]]
-
-        print(self.face)
         self.name = name
         self.scanned = False
+        
     def scan(self, wanted_color):
         #while not enter
         while True:
@@ -169,10 +170,17 @@ class Face:
                     cv2.putText(frame, 'Not the correct color', (400, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
             image=draw_2d_cube_state(frame, faces)
             cv2.imshow('frame', image)
-            cv2.waitKey(1)
+            key_pressed = cv2.waitKey(1) & 0xFF
+
+            if key_pressed == 27 or key_pressed == ord('q'):
+                print("Exiting...")
+                sys.exit()
+            elif key_pressed == 8:
+                return True
+
             ###############
             if self.scanned:
-                break
+                return False
         
 
 
@@ -231,35 +239,61 @@ def all_scanned(faces):
     return True
 
 
-#start camera
-frame1 = []
-frame1_contours = []
 
-faces ={
-    'white': Face('white'),
-    'orange': Face('orange'),
-    'yellow': Face('yellow'),
-    'red': Face('red'),
-    'blue': Face('blue'),
-    'green': Face('green'),
-}
+if __name__ == '__main__':
+        
+    #start camera
+    frame1 = []
+    frame1_contours = []
 
-while not all_scanned(faces):
-    for key in faces.keys():
-        faces[key].scan(key)
-cube_string = ("".join(faces["white"].flatten()) + "".join(faces["orange"].flatten()) + "".join(faces["green"].flatten()) + "".join(faces["red"].flatten()) + "".join(faces["blue"].flatten()) + "".join(faces["yellow"].flatten()))
-cube_string = cube_string.replace("green", "g")
-cube_string = cube_string.replace("red", "r")
-cube_string = cube_string.replace("white", "w")
-cube_string = cube_string.replace("orange", "o")
-cube_string = cube_string.replace("yellow", "y")
-cube_string = cube_string.replace("blue", "b")
+    faces ={
+        'white': Face('white'),
+        'orange': Face('orange'),
+        'yellow': Face('yellow'),
+        'red': Face('red'),
+        'blue': Face('blue'),
+        'green': Face('green'),
+    }
 
-print("Solving the cube...")
+    faces_list = ["white", "orange", "yellow", "red", "blue", "green"]
+    idx = 0
+    while not all_scanned(faces):
+        key = faces_list[idx]
+        redo = faces[key].scan(key)
+        if redo and idx-1 >= 0:
+            last_key = faces_list[idx-1]
+            faces[last_key] = Face(last_key)
+            idx -= 1
+        elif not redo:
+            idx += 1
 
-#solve the cube
-#solution = utils.solve(cube_string, 'Kociemba')
-print("finished solving")
-#print(solution)
-print("finished scan")
-cv2.waitKey(0)
+    cube_string = ("".join(faces["white"].flatten()) + "".join(faces["orange"].flatten()) + "".join(faces["green"].flatten()) + "".join(faces["red"].flatten()) + "".join(faces["blue"].flatten()) + "".join(faces["yellow"].flatten()))
+    
+    ## For rubik_solver library
+    # cube_string = cube_string.replace("white", "w")
+    # cube_string = cube_string.replace("orange", "o")
+    # cube_string = cube_string.replace("green", "g")
+    # cube_string = cube_string.replace("red", "r")
+    # cube_string = cube_string.replace("blue", "b")
+    # cube_string = cube_string.replace("yellow", "y")
+
+    ## For kociemba library
+    cube_string = cube_string.replace("white", "U")
+    cube_string = cube_string.replace("orange", "L")
+    cube_string = cube_string.replace("green", "F")
+    cube_string = cube_string.replace("red", "R")
+    cube_string = cube_string.replace("blue", "B")
+    cube_string = cube_string.replace("yellow", "D")
+
+    print("Solving the cube...")
+
+    #solve the cube
+    #solution = utils.solve(cube_string, 'Kociemba')
+    try:
+        solution = kociemba.solve(cube_string)
+    except ValueError:
+        print("Cubestring not valid: ", cube_string)
+    print("finished solving")
+    #print(solution)
+    print("finished scan")
+    cv2.waitKey(0)
