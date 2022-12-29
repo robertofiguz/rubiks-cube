@@ -108,6 +108,36 @@ class Face:
                      [None,None,None]]
         self.name = name
         self.scanned = False
+
+        #TODO: Improve this moves
+        self.rotations = {"white": {"white": "","yellow": "right-2","blue":"up-1","green":"down-1","orange":"right-1","red":"left-1"},
+                          "yellow":{"white": "right-2","yellow": "","blue":"right-2", "green":"right-2","orange":"left-1","red":"right-1"},
+                          "blue":{"white": "down-1","yellow": "up-1","blue":"","green":"up-2","orange":"up-1","red":"up-1"},
+                          "green":{"white": "up-1","yellow": "up-1","blue":"down-2","green":"","orange":"up-1","red":"up-1"},
+                          "orange":{"white": "left-1","yellow": "right-1","blue":"left-1","green":"left-1","orange":"","red":"left-2"},
+                          "red":{"white": "right-1","yellow": "left-1","blue":"right-1","green":"right-1","orange":"right-2","red":""}
+                         }
+
+    def get_arrow(self,x,y,w,h,center_x,center_y,middle_color,wanted_color):
+        if wanted_color == middle_color:
+            return (0,0), (0,0), 1
+        rotation = self.rotations[middle_color][wanted_color]
+        action, times = rotation.split("-")[0], int(rotation.split("-")[1])
+
+        if action == "up":
+            start_point = (int(center_x), int(center_y+2*h))
+            end_point = (int(center_x), int(center_y-2*h))
+        elif action == "down":
+            start_point = (int(center_x), int(center_y-2*h))
+            end_point = (int(center_x), int(center_y+2*h))
+        elif action == "left":
+            start_point = (int(center_x+2*w), int(center_y))
+            end_point = (int(center_x-2*w), int(center_y))
+        elif action == "right":
+            start_point = (int(center_x-2*w), int(center_y))
+            end_point = (int(center_x+2*w), int(center_y))
+        return start_point, end_point, times
+        
         
     def scan(self, wanted_color):
         #while not enter
@@ -147,6 +177,9 @@ class Face:
                 center_y = y + h / 2
                 color = frame[int(center_y), int(center_x)]
                 middle_color = predicted_color(color)
+
+                start_point, end_point, times = self.get_arrow(x,y,w,h,center_x,center_y,middle_color,wanted_color)
+                frame = cv2.arrowedLine(frame, start_point, end_point, (255, 0, 0), 2)
                 
                 if middle_color == wanted_color:
                     for idx, i in enumerate(contours):
@@ -180,6 +213,16 @@ class Face:
 
             ###############
             if self.scanned:
+                # if self.name == 'green':
+                #     cv2.putText(frame, 'Reading was done! ENTER do proceed', (400, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
+                #     image=draw_2d_cube_state(frame, faces)
+                #     cv2.imshow('frame', image)
+                #     key_pressed = cv2.waitKey(0) & 0xFF
+
+                #     if key_pressed == 8:
+                #         return True
+                #     elif key_pressed == 13:
+                #         return False
                 return False
         
 
@@ -290,7 +333,7 @@ if __name__ == '__main__':
     #solve the cube
     #solution = utils.solve(cube_string, 'Kociemba')
     try:
-        solution = kociemba.solve(cube_string)
+        solution = kociemba.solve(cube_string.strip())
     except ValueError:
         print("Cubestring not valid: ", cube_string)
     print("finished solving")
