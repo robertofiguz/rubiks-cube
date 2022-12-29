@@ -19,12 +19,12 @@ def draw_2d_cube_state(image, faces):
                 -----
     """
     grid = {
-        'white' : [1, 0],
-        'orange': [0, 1],
-        'green' : [1, 1],
-        'red'   : [2, 1],
-        'blue'  : [3, 1],
-        'yellow': [1, 2],
+        'white' : [1, 2],
+        'orange': [3, 1],
+        'green' : [2, 1],
+        'red'   : [1, 1],
+        'blue'  : [0, 1],
+        'yellow': [1, 0],
     }
     color_map = {
         'white' : (255, 255, 255),

@@ -6,7 +6,8 @@ import numpy as np
 from draw import draw_2d_cube_state
 import helpers
 import kociemba
-#from rubik_solver import utils
+from rubik_solver import utils
+from PyCube import PyCube
 class Face:
     def find_contours(self, dilatedFrame):
         contours, hierarchy = cv2.findContours(dilatedFrame, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
@@ -236,17 +237,17 @@ class Face:
         if None not in self.face[0] and None not in self.face[1] and None not in self.face[2]:
                 self.scanned = True
                 if self.name == 'white':
-                    self.face =np.rot90(self.face, 2)
-                elif self.name == 'orange':
                     self.face =np.rot90(self.face, 3)
-                elif self.name == 'yellow':
-                    self.face =np.rot90(self.face, 0)
-                elif self.name == 'red':
+                elif self.name == 'orange':
                     self.face =np.rot90(self.face, 1)
+                elif self.name == 'yellow':
+                    self.face =np.rot90(self.face, 3)
+                elif self.name == 'red':
+                    self.face =np.rot90(self.face, 3)
                 elif self.name == 'blue':
-                    self.face =np.rot90(self.face, 0)
-                elif self.name == 'green':
                     self.face =np.rot90(self.face, 2)
+                elif self.name == 'green':
+                    self.face =np.rot90(self.face, 0)
                 print('Face {} scanned!'.format(self.name))
         
     def flatten(self):
@@ -282,6 +283,10 @@ def all_scanned(faces):
     return True
 
 
+def launch_cube(solution):
+    cube = PyCube()
+    cube.reverse(solution)
+    cube.run()
 
 if __name__ == '__main__':
         
@@ -310,33 +315,44 @@ if __name__ == '__main__':
         elif not redo:
             idx += 1
 
-    cube_string = ("".join(faces["white"].flatten()) + "".join(faces["orange"].flatten()) + "".join(faces["green"].flatten()) + "".join(faces["red"].flatten()) + "".join(faces["blue"].flatten()) + "".join(faces["yellow"].flatten()))
+    order = ['yellow', 'blue', 'red', 'green', 'orange', 'white']
+    cube_string = ""
+    for i in order:
+        cube_string += "".join(faces[i].flatten())
+    
     
     ## For rubik_solver library
-    # cube_string = cube_string.replace("white", "w")
-    # cube_string = cube_string.replace("orange", "o")
-    # cube_string = cube_string.replace("green", "g")
-    # cube_string = cube_string.replace("red", "r")
-    # cube_string = cube_string.replace("blue", "b")
-    # cube_string = cube_string.replace("yellow", "y")
+    cube_string = cube_string.replace("white", "w")
+    cube_string = cube_string.replace("orange", "o")
+    cube_string = cube_string.replace("green", "g")
+    cube_string = cube_string.replace("red", "r")
+    cube_string = cube_string.replace("blue", "b")
+    cube_string = cube_string.replace("yellow", "y")
 
     ## For kociemba library
-    cube_string = cube_string.replace("white", "U")
-    cube_string = cube_string.replace("orange", "L")
-    cube_string = cube_string.replace("green", "F")
-    cube_string = cube_string.replace("red", "R")
-    cube_string = cube_string.replace("blue", "B")
-    cube_string = cube_string.replace("yellow", "D")
+    #cube_string = cube_string.replace("white", "U")
+    #cube_string = cube_string.replace("orange", "L")
+    #cube_string = cube_string.replace("green", "F")
+    #cube_string = cube_string.replace("red", "R")
+    #cube_string = cube_string.replace("blue", "B")
+    #cube_string = cube_string.replace("yellow", "D")
 
     print("Solving the cube...")
 
     #solve the cube
-    #solution = utils.solve(cube_string, 'Kociemba')
+    print(cube_string)
+    #cube_string = "wowgybwyogygybyoggrowbrgywrborwggybrbwororbwborgowryby"
+    #print(cube_string)
     try:
-        solution = kociemba.solve(cube_string.strip())
-    except ValueError:
+        solution = utils.solve(cube_string, 'Kociemba')
+    except Exception:
         print("Cubestring not valid: ", cube_string)
+    #try:
+    #    solution = kociemba.solve(cube_string.strip())
+    #except ValueError:
+    #    print("Cubestring not valid: ", cube_string)
+    launch_cube(solution) 
     print("finished solving")
-    #print(solution)
+    print(solution)
     print("finished scan")
     cv2.waitKey(0)
