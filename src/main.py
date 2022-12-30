@@ -210,13 +210,11 @@ class Face:
             image=draw_2d_cube_state(frame, faces)
             cv2.imshow('frame', image)
             key_pressed = cv2.waitKey(1) & 0xFF
-
             if key_pressed == 27 or key_pressed == ord('q'):
                 print("Exiting...")
                 sys.exit()
-            elif key_pressed == 8:
+            elif key_pressed == 8 or key_pressed == 127:
                 return True
-
             ###############
             if self.scanned:
                 # if self.name == 'green':
