@@ -8,7 +8,7 @@ from draw import draw_2d_cube_state
 import helpers
 import kociemba
 from rubik_solver import utils
-#from PyCube import PyCube
+from PyCube import PyCube
 import calibrate
 class Face:
     def find_contours(self, dilatedFrame):
@@ -288,11 +288,21 @@ def all_scanned(faces):
     return True
 
 
-# def launch_cube(solution):
-#     cube = PyCube()
-#     cube.reverse(solution)
-#     cube.run()
-
+def launch_cube(solution):
+    cube = PyCube()
+    result_solution = []
+    for i in solution:
+        i = str(i)
+        try:
+            if i[1] == '2':
+                result_solution.append(i[0])
+                result_solution.append(i[0])
+            else:
+                result_solution.append(i)
+        except:
+            result_solution.append(i)
+    cube.run(result_solution)
+    
 ## Define command-line arguments
 parser = argparse.ArgumentParser()
 parser.add_argument("-c", "--calibrate", action='store_true', default=False,
@@ -367,7 +377,7 @@ if __name__ == '__main__':
     #    solution = kociemba.solve(cube_string.strip())
     #except ValueError:
     #    print("Cubestring not valid: ", cube_string)
-    # launch_cube(solution) 
+    launch_cube(solution) 
     print("finished solving")
     print(solution)
     print("finished scan")
