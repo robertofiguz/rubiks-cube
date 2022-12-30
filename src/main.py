@@ -373,6 +373,9 @@ if __name__ == '__main__':
         solution = utils.solve(cube_string, 'Kociemba')
     except Exception:
         print("Cubestring not valid: ", cube_string)
+        print(f"There are {cube_string.count('w')} white, {cube_string.count('o')} orange, {cube_string.count('g')} green, {cube_string.count('r')} red, {cube_string.count('b')} blue, {cube_string.count('y')} yellow squares")
+        print("There should be 9 of each color")
+        print("Please scan the cube again")
     #try:
     #    solution = kociemba.solve(cube_string.strip())
     #except ValueError:
