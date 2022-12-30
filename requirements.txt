@@ -2,4 +2,5 @@ imutils==0.5.4
 numpy==1.21.4
 opencv-python==4.6.0.66
 kociemba==1.2.1
+pygame==2.1.2
 git+https://github.com/robertofiguz/python-rubik@master
