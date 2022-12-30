@@ -113,10 +113,10 @@ class Face:
         self.scanned = False
 
         self.rotations = {"white": {"white": "","yellow": "right-2","blue":"up-1","green":"down-1","orange":"right-1","red":"left-1"},
-                          "yellow":{"white": "right-2","yellow": "","blue":"right-2", "green":"right-2","orange":"left-1","red":"right-1"},
-                          "blue":{"white": "down-1","yellow": "up-1","blue":"","green":"down-2","orange":"up-1","red":"up-1"},
+                          "yellow":{"white": "right-2","yellow": "","blue":"right-2", "green":"right-2","orange":"right-3","red":"right-1"},
+                          "blue":{"white": "up-1","yellow": "up-1","blue":"","green":"down-2","orange":"up-1","red":"up-1"},
                           "green":{"white": "up-1","yellow": "up-1","blue":"up-2","green":"","orange":"up-1","red":"up-1"},
-                          "orange":{"white": "left-1","yellow": "right-1","blue":"left-1","green":"left-1","orange":"","red":"left-2"},
+                          "orange":{"white": "right-1","yellow": "right-1","blue":"left-1","green":"left-1","orange":"","red":"left-2"},
                           "red":{"white": "right-1","yellow": "left-1","blue":"right-1","green":"right-1","orange":"right-2","red":""}
                          }
 
@@ -158,6 +158,7 @@ class Face:
                 time.sleep(0.5)
             #read frame
             ret, frame = cap.read()
+            frame = cv2.flip(frame, 1)
             
             #process frame
             grayFrame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
