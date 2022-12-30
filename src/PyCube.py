@@ -15,7 +15,7 @@ from pygame.locals import *
 
 from OpenGL.GL import *
 from OpenGL.GLU import *
-from OpenGL.GLUT import *
+#from OpenGL.GLUT import *
 
 moves = ''
 
@@ -32,7 +32,7 @@ class PyCube:
         # Using depth test to make sure closer colors are shown over further ones
         glEnable(GL_DEPTH_TEST)
         glDepthFunc(GL_LESS)
-        glutInit()
+        # glutInit()
         # glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
         # Default view
@@ -114,7 +114,7 @@ class PyCube:
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
 
             self.draw_cube()
-            glutSolidSphere(3.0, 50, 50);
+            # glutSolidSphere(3.0, 50, 50);
             # draw_face()
             # self.draw_axis()
             if not self._reverse:
