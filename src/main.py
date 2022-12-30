@@ -110,14 +110,16 @@ class Face:
         self.name = name
         self.scanned = False
 
-        #TODO: Improve this moves
         self.rotations = {"white": {"white": "","yellow": "right-2","blue":"up-1","green":"down-1","orange":"right-1","red":"left-1"},
                           "yellow":{"white": "right-2","yellow": "","blue":"right-2", "green":"right-2","orange":"left-1","red":"right-1"},
-                          "blue":{"white": "down-1","yellow": "up-1","blue":"","green":"up-2","orange":"up-1","red":"up-1"},
-                          "green":{"white": "up-1","yellow": "up-1","blue":"down-2","green":"","orange":"up-1","red":"up-1"},
+                          "blue":{"white": "down-1","yellow": "up-1","blue":"","green":"down-2","orange":"up-1","red":"up-1"},
+                          "green":{"white": "up-1","yellow": "up-1","blue":"up-2","green":"","orange":"up-1","red":"up-1"},
                           "orange":{"white": "left-1","yellow": "right-1","blue":"left-1","green":"left-1","orange":"","red":"left-2"},
                           "red":{"white": "right-1","yellow": "left-1","blue":"right-1","green":"right-1","orange":"right-2","red":""}
                          }
+
+        self.colors = {"White": (255, 255, 255), "Yellow": (0, 255, 255), "Orange": (0, 165, 255), "Red": (0, 0, 255), "Green": (0, 255, 0), "Blue": (255, 0, 0)}
+
 
     def get_arrow(self,x,y,w,h,center_x,center_y,middle_color,wanted_color):
         if wanted_color == middle_color:
@@ -167,7 +169,7 @@ class Face:
             frame = self.draw_contours(frame,contours)
 
             #write wanted color on frame bottom left
-            cv2.putText(frame, helpers.instructions[wanted_color], (10, 470), cv2.FONT_HERSHEY_SIMPLEX,0.5, (255, 255, 255), 2, cv2.LINE_AA)
+            cv2.putText(frame, f"Show the {wanted_color} face", (10, 470), cv2.FONT_HERSHEY_SIMPLEX,0.5, self.colors[wanted_color.capitalize()], 2, cv2.LINE_AA)
             if len(contours) == 9:
                 middle = contours[4]
                 x = middle[0]
@@ -180,7 +182,7 @@ class Face:
                 middle_color = predicted_color(color)
 
                 start_point, end_point, times = self.get_arrow(x,y,w,h,center_x,center_y,middle_color,wanted_color)
-                frame = cv2.arrowedLine(frame, start_point, end_point, (255, 0, 0), 2)
+                frame = cv2.arrowedLine(frame, start_point, end_point, self.colors[wanted_color.capitalize()], 5)
                 
                 if middle_color == wanted_color:
                     for idx, i in enumerate(contours):
@@ -341,7 +343,7 @@ if __name__ == '__main__':
 
     #solve the cube
     print(cube_string)
-    #cube_string = "wowgybwyogygybyoggrowbrgywrborwggybrbwororbwborgowryby"
+    # cube_string = "wowgybwyogygybyoggrowbrgywrborwggybrbwororbwborgowryby"
     #print(cube_string)
     try:
         solution = utils.solve(cube_string, 'Kociemba')
