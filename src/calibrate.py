@@ -52,7 +52,7 @@ def mouseClick(event, x, y, flags, param, window_name, img_dict):
             cv2.setTrackbarPos(limit, window_name, limits[limit])
 
 
-def main():
+def run():
     
 
     # Create windows
@@ -136,14 +136,15 @@ def main():
             if color == "O":
                 with open(file_name, 'w') as file_handle:
                     json.dump(dict, file_handle, indent=4)
-                sys.exit(0)
+                cv2.destroyAllWindows()
+                return
             color_calibrated = True
 
         elif key == ord('q') or key == 27:  # q or ESC
             sys.exit(0)
 
-    cv2.destroyAllWindows()
+
 
 
 if __name__ == '__main__':
-    main()
+    run()

@@ -1,13 +1,15 @@
 import sys
 import cv2
 import time
+import argparse
 from predict import predicted_color
 import numpy as np
 from draw import draw_2d_cube_state
 import helpers
 import kociemba
 from rubik_solver import utils
-from PyCube import PyCube
+#from PyCube import PyCube
+import calibrate
 class Face:
     def find_contours(self, dilatedFrame):
         contours, hierarchy = cv2.findContours(dilatedFrame, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
@@ -285,74 +287,73 @@ def all_scanned(faces):
     return True
 
 
-def launch_cube(solution):
-    cube = PyCube()
-    result_solution = []
-    for i in solution:
-        i = str(i)
-        try:
-            if i[1] == '2':
-                result_solution.append(i[0])
-                result_solution.append(i[0])
-            else:
-                result_solution.append(i)
-        except:
-            result_solution.append(i)
-    cube.run(result_solution)
+# def launch_cube(solution):
+#     cube = PyCube()
+#     cube.reverse(solution)
+#     cube.run()
+
+## Define command-line arguments
+parser = argparse.ArgumentParser()
+parser.add_argument("-c", "--calibrate", action='store_true', default=False,
+        required=False, help="Calibrate the colors.")
+args = parser.parse_args()
+
+calibrate_colors = args.calibrate
+
 
 if __name__ == '__main__':
-    testing = True
-    if not testing:
-        #start camera
-        frame1 = []
-        frame1_contours = []
-
-        faces ={
-            'white': Face('white'),
-            'orange': Face('orange'),
-            'yellow': Face('yellow'),
-            'red': Face('red'),
-            'blue': Face('blue'),
-            'green': Face('green'),
-        }
-
-        faces_list = ["white", "orange", "yellow", "red", "blue", "green"]
-        idx = 0
-        while not all_scanned(faces):
-            key = faces_list[idx]
-            redo = faces[key].scan(key)
-            if redo and idx-1 >= 0:
-                last_key = faces_list[idx-1]
-                faces[last_key] = Face(last_key)
-                idx -= 1
-            elif not redo:
-                idx += 1
-
-        order = ['yellow', 'blue', 'red', 'green', 'orange', 'white']
-        cube_string = ""
-        for i in order:
-            cube_string += "".join(faces[i].flatten())
+    if calibrate_colors:
+        calibrate.run()
         
-        
-        ## For rubik_solver library
-        cube_string = cube_string.replace("white", "w")
-        cube_string = cube_string.replace("orange", "o")
-        cube_string = cube_string.replace("green", "g")
-        cube_string = cube_string.replace("red", "r")
-        cube_string = cube_string.replace("blue", "b")
-        cube_string = cube_string.replace("yellow", "y")
+    #start camera
+    frame1 = []
+    frame1_contours = []
 
-        ## For kociemba library
-        #cube_string = cube_string.replace("white", "U")
-        #cube_string = cube_string.replace("orange", "L")
-        #cube_string = cube_string.replace("green", "F")
-        #cube_string = cube_string.replace("red", "R")
-        #cube_string = cube_string.replace("blue", "B")
-        #cube_string = cube_string.replace("yellow", "D")
+    faces ={
+        'white': Face('white'),
+        'orange': Face('orange'),
+        'yellow': Face('yellow'),
+        'red': Face('red'),
+        'blue': Face('blue'),
+        'green': Face('green'),
+    }
 
-        print("Solving the cube...")
+    faces_list = ["white", "orange", "yellow", "red", "blue", "green"]
+    idx = 0
+    while not all_scanned(faces):
+        key = faces_list[idx]
+        redo = faces[key].scan(key)
+        if redo and idx-1 >= 0:
+            last_key = faces_list[idx-1]
+            faces[last_key] = Face(last_key)
+            idx -= 1
+        elif not redo:
+            idx += 1
 
-    cube_string = "rryrygwwrwygbbbbbbrogwrywwgyygogrowyobbgoyroyorwowgogb"
+    order = ['yellow', 'blue', 'red', 'green', 'orange', 'white']
+    cube_string = ""
+    for i in order:
+        cube_string += "".join(faces[i].flatten())
+    
+    
+    ## For rubik_solver library
+    cube_string = cube_string.replace("white", "w")
+    cube_string = cube_string.replace("orange", "o")
+    cube_string = cube_string.replace("green", "g")
+    cube_string = cube_string.replace("red", "r")
+    cube_string = cube_string.replace("blue", "b")
+    cube_string = cube_string.replace("yellow", "y")
+
+    ## For kociemba library
+    #cube_string = cube_string.replace("white", "U")
+    #cube_string = cube_string.replace("orange", "L")
+    #cube_string = cube_string.replace("green", "F")
+    #cube_string = cube_string.replace("red", "R")
+    #cube_string = cube_string.replace("blue", "B")
+    #cube_string = cube_string.replace("yellow", "D")
+
+    print("Solving the cube...")
+
     #solve the cube
     print(cube_string)
     # cube_string = "wowgybwyogygybyoggrowbrgywrborwggybrbwororbwborgowryby"
@@ -365,9 +366,7 @@ if __name__ == '__main__':
     #    solution = kociemba.solve(cube_string.strip())
     #except ValueError:
     #    print("Cubestring not valid: ", cube_string)
-    #print solution
-    
-    launch_cube(solution) 
+    # launch_cube(solution) 
     print("finished solving")
     print(solution)
     print("finished scan")
