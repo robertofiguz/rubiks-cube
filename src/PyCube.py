@@ -40,7 +40,9 @@ class PyCube:
             'B\'': 'B',
         }
         self.last_moves = []
-        pygame.display.set_mode((self.width, self.height), DOUBLEBUF | OPENGL)
+        self.text = None
+        self.screen=pygame.display.set_mode((self.width, self.height), DOUBLEBUF | OPENGL)
+        
         pygame.display.set_caption('PyCube')
         # glClearColor(0.35, 0.35, 0.35, 1.0)
         glClearColor(1, 1, 1, 0)
@@ -105,6 +107,9 @@ class PyCube:
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
 
             self.draw_cube()
+            # Draw the text onto the screen
+            if self.text:
+                self.screen.blit(self.text, (500, 500))
             # glutSolidSphere(3.0, 50, 50);
             # draw_face()
             # self.draw_axis()
@@ -361,6 +366,9 @@ class PyCube:
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
 
             self.draw_cube()
+            # Draw the text onto the screen
+            if self.text:
+                self.screen.blit(self.text, (500, 500))
             # glutSolidSphere(3.0, 50, 50);
             # draw_face()
             # self.draw_axis()
@@ -371,6 +379,25 @@ class PyCube:
 
         # for v in left_face:
         #     print(v)
+
+
+        # Set the font and font size
+        font_name = "Arial"
+        font_size = 36
+        font = pygame.font.SysFont(font_name, font_size)
+
+        # Set the text message
+        text_message = "Let's Solve the Cube!"
+
+        # Render the text to a surface
+        self.text= font.render(text_message, True, (0, 255, 0))
+
+        # Get the size of the text surface
+        text_width, text_height = self.text.get_size()
+
+        # Draw the text onto the screen
+        self.screen.blit(self.text, (50, 50))
+
         while True:
     
             theta_inc = 7
@@ -392,6 +419,16 @@ class PyCube:
                     if event.key == pygame.K_RETURN:
                         try:
                             move = self.movements.pop(0)
+
+                            # Set the text message
+                            text_message = str(move)
+
+                            # Render the text to a surface
+                            text_surface = font.render(text_message, True, (0, 0, 0))
+
+                            # Get the size of the text surface
+                            text_width, text_height = text_surface.get_size()
+
                             self.last_moves.append(move)
                             reverse = False
                             if len(move) == 2:
@@ -425,6 +462,14 @@ class PyCube:
                         if len(self.last_moves) == 0:
                             continue
                         last_move = self.last_moves.pop(-1)
+                        # Set the text message
+                        text_message = str(move)
+
+                        # Render the text to a surface
+                        text_surface = font.render(text_message, True, (0, 0, 0))
+
+                        # Get the size of the text surface
+                        text_width, text_height = text_surface.get_size()
                         self.movements.insert(0, last_move)
                         move = self.reverse_moves[last_move]
                         reverse = False
