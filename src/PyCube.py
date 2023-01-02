@@ -25,6 +25,21 @@ class PyCube:
         self.width = 800
         self.height = 600
         self.movements = []
+        self.reverse_moves = {
+            'U': 'U\'',
+            'U\'': 'U',
+            'D': 'D\'',
+            'D\'': 'D',
+            'L': 'L\'',
+            'L\'': 'L',
+            'R': 'R\'',
+            'R\'': 'R',
+            'F': 'F\'',
+            'F\'': 'F',
+            'B': 'B\'',
+            'B\'': 'B',
+        }
+        self.last_moves = []
         pygame.display.set_mode((self.width, self.height), DOUBLEBUF | OPENGL)
         pygame.display.set_caption('PyCube')
         # glClearColor(0.35, 0.35, 0.35, 1.0)
@@ -52,23 +67,10 @@ class PyCube:
         moves = moves[::-1]
         #reverse each move
         #mapping
-        move_map = {
-            'U': 'U\'',
-            'U\'': 'U',
-            'D': 'D\'',
-            'D\'': 'D',
-            'L': 'L\'',
-            'L\'': 'L',
-            'R': 'R\'',
-            'R\'': 'R',
-            'F': 'F\'',
-            'F\'': 'F',
-            'B': 'B\'',
-            'B\'': 'B',
-        }
+
         for i in moves:
             try:
-                result.append(move_map[i])
+                result.append(self.reverse_moves[i])
             except KeyError:
                 if i[1] == '2':
                     result.append(i[0])
@@ -76,19 +78,8 @@ class PyCube:
             
         self._reverse = True
         return result
-    def run(self, movements):
-        movements = [str(i) for i in movements]
-        _save_moves = copy.deepcopy(movements)
-        self.movements = self.reverse(movements)
-        # set initial rotation
-        #glRotate(90, 1, 0, 0)
-        # glRotate(-15, 0, 0, 1)
-        # glRotate(15, 1, 0, 0)
 
-        global moves
-        
-
-        pad_toggle = False
+    def animate(self, move, moves, theta, theta_inc, reverse):
 
         inc_x = 0
         inc_y = 0
@@ -122,6 +113,261 @@ class PyCube:
             
             #make pygame slower
             
+        if move =='F':
+            if reverse:
+                moves += 'F'
+                sys.stdout.write("F\'")
+                theta *= 1
+            else:
+                moves += 'f'
+                sys.stdout.write("F")
+                theta *= -1
+            for x in range(theta_inc):
+                for i in range(8):
+                    center_pieces[0][i] = z_rot(center_pieces[0][i], theta)
+
+                for axis in edge_pieces:
+                    for piece in axis:
+                        flag = True
+                        for vertex in piece:
+                            if vertex[2] < 0:
+                                flag = False
+                                break
+                        if flag:
+                            for i in range(8):
+                                piece[i] = z_rot(piece[i], theta)
+                for piece in corner_pieces:
+                    flag = True
+                    for vertex in piece:
+                        if vertex[2] < 0:
+                            flag = False
+                            break
+                    if flag:
+                        for i in range(8):
+                            piece[i] = z_rot(piece[i], theta)
+
+                update()
+
+        if move =='L':
+            if reverse:
+                moves += 'L'
+                sys.stdout.write("L\'")
+                theta *= -1
+            else:
+                moves += 'l'
+                sys.stdout.write("L")
+                theta *= 1
+            for x in range(theta_inc):
+                for i in range(8):
+                    center_pieces[1][i] = x_rot(center_pieces[1][i], theta)
+
+                for axis in edge_pieces:
+                    for piece in axis:
+                        flag = True
+                        for vertex in piece:
+                            if vertex[0] > 0:
+                                flag = False
+                                break
+                        if flag:
+                            for i in range(8):
+                                piece[i] = x_rot(piece[i], theta)
+                for piece in corner_pieces:
+                    flag = True
+                    for vertex in piece:
+                        if vertex[0] > 0:
+                            flag = False
+                            break
+                    if flag:
+                        for i in range(8):
+                            piece[i] = x_rot(piece[i], theta)
+
+                update()
+
+        if move =='B':
+            if reverse:
+                moves += 'B'
+                sys.stdout.write("B\'")
+                theta *= -1
+            else:
+                moves += 'b'
+                sys.stdout.write("B")
+                theta *= 1
+            for x in range(theta_inc):
+                for i in range(8):
+                    center_pieces[2][i] = z_rot(center_pieces[2][i], theta)
+
+                for axis in edge_pieces:
+                    for piece in axis:
+                        flag = True
+                        for vertex in piece:
+                            if vertex[2] > 0:
+                                flag = False
+                                break
+                        if flag:
+                            for i in range(8):
+                                piece[i] = z_rot(piece[i], theta)
+                for piece in corner_pieces:
+                    flag = True
+                    for vertex in piece:
+                        if vertex[2] > 0:
+                            flag = False
+                            break
+                    if flag:
+                        for i in range(8):
+                            piece[i] = z_rot(piece[i], theta)
+
+                update()
+
+        if move =='R':
+            if reverse:
+                moves += 'R'
+                sys.stdout.write("R\'")
+                theta *= 1
+            else:
+                moves += 'r'
+                sys.stdout.write("R")
+                theta *= -1
+            for x in range(theta_inc):
+                for i in range(8):
+                    center_pieces[3][i] = x_rot(center_pieces[3][i], theta)
+
+                for axis in edge_pieces:
+                    for piece in axis:
+                        flag = True
+                        for vertex in piece:
+                            if vertex[0] < 0:
+                                flag = False
+                                break
+                        if flag:
+                            for i in range(8):
+                                piece[i] = x_rot(piece[i], theta)
+                for piece in corner_pieces:
+                    flag = True
+                    for vertex in piece:
+                        if vertex[0] < 0:
+                            flag = False
+                            break
+                    if flag:
+                        for i in range(8):
+                            piece[i] = x_rot(piece[i], theta)
+
+                update()
+
+        if move =='U':
+            if reverse:
+                moves += 'U'
+                sys.stdout.write("U\'")
+                theta *= 1
+            else:
+                moves += 'u'
+                sys.stdout.write("U")
+                theta *= -1
+            for x in range(theta_inc):
+                for i in range(8):
+                    center_pieces[4][i] = y_rot(center_pieces[4][i], theta)
+
+                for axis in edge_pieces:
+                    for piece in axis:
+                        flag = True
+                        for vertex in piece:
+                            if vertex[1] < 0:
+                                flag = False
+                                break
+                        if flag:
+                            for i in range(8):
+                                piece[i] = y_rot(piece[i], theta)
+                for piece in corner_pieces:
+                    flag = True
+                    for vertex in piece:
+                        if vertex[1] < 0:
+                            flag = False
+                            break
+                    if flag:
+                        for i in range(8):
+                            piece[i] = y_rot(piece[i], theta)
+
+                update()
+
+        if move =='D':
+            if reverse:
+                moves +='D'
+                sys.stdout.write("D\'")
+                theta *= -1
+            else:
+                moves += 'd'
+                sys.stdout.write("D")
+                theta *= 1
+            for x in range(theta_inc):
+                for i in range(8):
+                    center_pieces[5][i] = y_rot(center_pieces[5][i], theta)
+
+                for axis in edge_pieces:
+                    for piece in axis:
+                        flag = True
+                        for vertex in piece:
+                            if vertex[1] > 0:
+                                flag = False
+                                break
+                        if flag:
+                            for i in range(8):
+                                piece[i] = y_rot(piece[i], theta)
+                for piece in corner_pieces:
+                    flag = True
+                    for vertex in piece:
+                        if vertex[1] > 0:
+                            flag = False
+                            break
+                    if flag:
+                        for i in range(8):
+                            piece[i] = y_rot(piece[i], theta)
+
+                update()
+        return move, moves, theta, theta_inc, reverse
+    
+    def run(self, movements):
+        movements = [str(i) for i in movements]
+        _save_moves = copy.deepcopy(movements)
+        self.movements = self.reverse(movements)
+        # set initial rotation
+        #glRotate(90, 1, 0, 0)
+        # glRotate(-15, 0, 0, 1)
+        # glRotate(15, 1, 0, 0)
+
+        global moves
+        
+
+        pad_toggle = False
+        inc_x = 0
+        inc_y = 0
+        accum = (1, 0, 0, 0)
+        zoom = 1
+
+        def update():
+
+            pygame.mouse.get_rel()  # prevents the cube from instantly rotating to a newly clicked mouse coordinate
+
+            rot_x = normalize(axisangle_to_q((1.0, 0.0, 0.0), inc_x))
+            rot_y = normalize(axisangle_to_q((0.0, 1.0, 0.0), inc_y))
+
+            nonlocal accum
+            accum = q_mult(accum, rot_x)
+            accum = q_mult(accum, rot_y)
+            # print(accum)
+
+            glMatrixMode(GL_MODELVIEW)
+            glLoadMatrixf(q_to_mat4(accum))
+            glScalef(zoom, zoom, zoom)
+
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
+
+            self.draw_cube()
+            # glutSolidSphere(3.0, 50, 50);
+            # draw_face()
+            # self.draw_axis()
+            if not self._reverse:
+                pygame.display.flip()
+            
+            #make pygame slower    
 
         # for v in left_face:
         #     print(v)
@@ -146,6 +392,7 @@ class PyCube:
                     if event.key == pygame.K_RETURN:
                         try:
                             move = self.movements.pop(0)
+                            self.last_moves.append(move)
                             reverse = False
                             if len(move) == 2:
                                 move = move[0]
@@ -155,6 +402,7 @@ class PyCube:
                             print("No more moves")
                             self._reverse = False
                             self.movements = _save_moves
+                            self.last_moves = []
                             break
                         try:
                             # Rotating about the x axis
@@ -380,9 +628,229 @@ class PyCube:
                                             piece[i] = y_rot(piece[i], theta)
 
                                 update()
-                    
-                    if event.key == pygame.K_e:
-                        pad_toggle = not pad_toggle
+                    if event.key == pygame.K_BACKSPACE:
+                        if len(self.last_moves) == 0:
+                            continue
+                        last_move = self.last_moves.pop(-1)
+                        self.movements.insert(0, last_move)
+                        move = self.reverse_moves[last_move]
+                        reverse = False
+                        if len(move) == 2:
+                            move = move[0]
+                            reverse = True
+
+                        if move =='F':
+                            if reverse:
+                                moves += 'F'
+                                sys.stdout.write("F\'")
+                                theta *= 1
+                            else:
+                                moves += 'f'
+                                sys.stdout.write("F")
+                                theta *= -1
+                            for x in range(theta_inc):
+                                for i in range(8):
+                                    center_pieces[0][i] = z_rot(center_pieces[0][i], theta)
+
+                                for axis in edge_pieces:
+                                    for piece in axis:
+                                        flag = True
+                                        for vertex in piece:
+                                            if vertex[2] < 0:
+                                                flag = False
+                                                break
+                                        if flag:
+                                            for i in range(8):
+                                                piece[i] = z_rot(piece[i], theta)
+                                for piece in corner_pieces:
+                                    flag = True
+                                    for vertex in piece:
+                                        if vertex[2] < 0:
+                                            flag = False
+                                            break
+                                    if flag:
+                                        for i in range(8):
+                                            piece[i] = z_rot(piece[i], theta)
+
+                                update()
+
+                        if move =='L':
+                            if reverse:
+                                moves += 'L'
+                                sys.stdout.write("L\'")
+                                theta *= -1
+                            else:
+                                moves += 'l'
+                                sys.stdout.write("L")
+                                theta *= 1
+                            for x in range(theta_inc):
+                                for i in range(8):
+                                    center_pieces[1][i] = x_rot(center_pieces[1][i], theta)
+
+                                for axis in edge_pieces:
+                                    for piece in axis:
+                                        flag = True
+                                        for vertex in piece:
+                                            if vertex[0] > 0:
+                                                flag = False
+                                                break
+                                        if flag:
+                                            for i in range(8):
+                                                piece[i] = x_rot(piece[i], theta)
+                                for piece in corner_pieces:
+                                    flag = True
+                                    for vertex in piece:
+                                        if vertex[0] > 0:
+                                            flag = False
+                                            break
+                                    if flag:
+                                        for i in range(8):
+                                            piece[i] = x_rot(piece[i], theta)
+
+                                update()
+
+                        if move =='B':
+                            if reverse:
+                                moves += 'B'
+                                sys.stdout.write("B\'")
+                                theta *= -1
+                            else:
+                                moves += 'b'
+                                sys.stdout.write("B")
+                                theta *= 1
+                            for x in range(theta_inc):
+                                for i in range(8):
+                                    center_pieces[2][i] = z_rot(center_pieces[2][i], theta)
+
+                                for axis in edge_pieces:
+                                    for piece in axis:
+                                        flag = True
+                                        for vertex in piece:
+                                            if vertex[2] > 0:
+                                                flag = False
+                                                break
+                                        if flag:
+                                            for i in range(8):
+                                                piece[i] = z_rot(piece[i], theta)
+                                for piece in corner_pieces:
+                                    flag = True
+                                    for vertex in piece:
+                                        if vertex[2] > 0:
+                                            flag = False
+                                            break
+                                    if flag:
+                                        for i in range(8):
+                                            piece[i] = z_rot(piece[i], theta)
+
+                                update()
+
+                        if move =='R':
+                            if reverse:
+                                moves += 'R'
+                                sys.stdout.write("R\'")
+                                theta *= 1
+                            else:
+                                moves += 'r'
+                                sys.stdout.write("R")
+                                theta *= -1
+                            for x in range(theta_inc):
+                                for i in range(8):
+                                    center_pieces[3][i] = x_rot(center_pieces[3][i], theta)
+
+                                for axis in edge_pieces:
+                                    for piece in axis:
+                                        flag = True
+                                        for vertex in piece:
+                                            if vertex[0] < 0:
+                                                flag = False
+                                                break
+                                        if flag:
+                                            for i in range(8):
+                                                piece[i] = x_rot(piece[i], theta)
+                                for piece in corner_pieces:
+                                    flag = True
+                                    for vertex in piece:
+                                        if vertex[0] < 0:
+                                            flag = False
+                                            break
+                                    if flag:
+                                        for i in range(8):
+                                            piece[i] = x_rot(piece[i], theta)
+
+                                update()
+
+                        if move =='U':
+                            if reverse:
+                                moves += 'U'
+                                sys.stdout.write("U\'")
+                                theta *= 1
+                            else:
+                                moves += 'u'
+                                sys.stdout.write("U")
+                                theta *= -1
+                            for x in range(theta_inc):
+                                for i in range(8):
+                                    center_pieces[4][i] = y_rot(center_pieces[4][i], theta)
+
+                                for axis in edge_pieces:
+                                    for piece in axis:
+                                        flag = True
+                                        for vertex in piece:
+                                            if vertex[1] < 0:
+                                                flag = False
+                                                break
+                                        if flag:
+                                            for i in range(8):
+                                                piece[i] = y_rot(piece[i], theta)
+                                for piece in corner_pieces:
+                                    flag = True
+                                    for vertex in piece:
+                                        if vertex[1] < 0:
+                                            flag = False
+                                            break
+                                    if flag:
+                                        for i in range(8):
+                                            piece[i] = y_rot(piece[i], theta)
+
+                                update()
+
+                        if move =='D':
+                            if reverse:
+                                moves +='D'
+                                sys.stdout.write("D\'")
+                                theta *= -1
+                            else:
+                                moves += 'd'
+                                sys.stdout.write("D")
+                                theta *= 1
+                            for x in range(theta_inc):
+                                for i in range(8):
+                                    center_pieces[5][i] = y_rot(center_pieces[5][i], theta)
+
+                                for axis in edge_pieces:
+                                    for piece in axis:
+                                        flag = True
+                                        for vertex in piece:
+                                            if vertex[1] > 0:
+                                                flag = False
+                                                break
+                                        if flag:
+                                            for i in range(8):
+                                                piece[i] = y_rot(piece[i], theta)
+                                for piece in corner_pieces:
+                                    flag = True
+                                    for vertex in piece:
+                                        if vertex[1] > 0:
+                                            flag = False
+                                            break
+                                    if flag:
+                                        for i in range(8):
+                                            piece[i] = y_rot(piece[i], theta)
+
+                                update()
+
+                    # if event.key == pygame.K_e:
+                    #     pad_toggle = not pad_toggle
 
                     # Reset to default view
                     if event.key == pygame.K_SPACE:
