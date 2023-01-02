@@ -24,6 +24,30 @@ class PyCube:
         pygame.init()
         self.width = 800
         self.height = 600
+
+        self.initial_pos = False
+
+        self.moves_info = {
+            'U': 'Turn UP face 90 degrees clockwise',
+            'U\'': 'Turn UP face 90 degrees counterclockwise',
+            'D': 'Turn DOWN face 90 degrees clockwise',
+            'D\'': 'Turn DOWN face 90 degrees counterclockwise',
+            'L': 'Turn LEFT face 90 degrees clockwise',
+            'L\'': 'Turn LEFT face 90 degrees counterclockwise',
+            'R': 'Turn RIGHT face 90 degrees clockwise',
+            'R\'': 'Turn RIGHT face 90 degrees counterclockwise',
+            'F': 'Turn FRONT face 90 degrees clockwise',
+            'F\'': 'Turn FRONT face 90 degrees counterclockwise',
+            'B': 'Turn BACK face 90 degrees clockwise',
+            'B\'': 'Turn BACK face 90 degrees counterclockwise',
+        }
+
+        # define the RGB value for white,
+        #  green, blue colour .
+        white = (255, 255, 255)
+        green = (0, 255, 0)
+        blue = (0, 0, 128)
+
         self.movements = []
         self.reverse_moves = {
             'U': 'U\'',
@@ -40,8 +64,14 @@ class PyCube:
             'B\'': 'B',
         }
         self.last_moves = []
-        pygame.display.set_mode((self.width, self.height), DOUBLEBUF | OPENGL)
+        self.display_surface = pygame.display.set_mode((self.width, self.height), DOUBLEBUF | OPENGL)
         pygame.display.set_caption('PyCube')
+
+        self.font = pygame.font.Font('freesansbold.ttf', 32)
+        self.text = self.font.render('', True, green, blue)
+        self.textRect = self.text.get_rect()
+        self.textRect.center = (self.width // 2, self.height // 2)
+
         # glClearColor(0.35, 0.35, 0.35, 1.0)
         glClearColor(1, 1, 1, 0)
         # Using depth test to make sure closer colors are shown over further ones
@@ -116,11 +146,11 @@ class PyCube:
         if move =='F':
             if reverse:
                 moves += 'F'
-                sys.stdout.write("F\'")
+                sys.stdout.write("F\' - ", self.moves_info['F\''], '\n')
                 theta *= 1
             else:
                 moves += 'f'
-                sys.stdout.write("F")
+                sys.stdout.write("F - ", self.moves_info['F'], '\n')
                 theta *= -1
             for x in range(theta_inc):
                 for i in range(8):
@@ -151,11 +181,11 @@ class PyCube:
         if move =='L':
             if reverse:
                 moves += 'L'
-                sys.stdout.write("L\'")
+                sys.stdout.write("L\' - ", self.moves_info['L\''], '\n')
                 theta *= -1
             else:
                 moves += 'l'
-                sys.stdout.write("L")
+                sys.stdout.write("L - ", self.moves_info['L'], '\n')
                 theta *= 1
             for x in range(theta_inc):
                 for i in range(8):
@@ -186,11 +216,11 @@ class PyCube:
         if move =='B':
             if reverse:
                 moves += 'B'
-                sys.stdout.write("B\'")
+                sys.stdout.write("B\' - ", self.moves_info['B\''], '\n')
                 theta *= -1
             else:
                 moves += 'b'
-                sys.stdout.write("B")
+                sys.stdout.write("B - ", self.moves_info['B'], '\n')
                 theta *= 1
             for x in range(theta_inc):
                 for i in range(8):
@@ -221,11 +251,11 @@ class PyCube:
         if move =='R':
             if reverse:
                 moves += 'R'
-                sys.stdout.write("R\'")
+                sys.stdout.write("R\' - ", self.moves_info['R\''], '\n')
                 theta *= 1
             else:
                 moves += 'r'
-                sys.stdout.write("R")
+                sys.stdout.write("R - ", self.moves_info['R'], '\n')
                 theta *= -1
             for x in range(theta_inc):
                 for i in range(8):
@@ -256,11 +286,11 @@ class PyCube:
         if move =='U':
             if reverse:
                 moves += 'U'
-                sys.stdout.write("U\'")
+                sys.stdout.write("U\' - ", self.moves_info['U\''], '\n')
                 theta *= 1
             else:
                 moves += 'u'
-                sys.stdout.write("U")
+                sys.stdout.write("U - ", self.moves_info['U'], '\n')
                 theta *= -1
             for x in range(theta_inc):
                 for i in range(8):
@@ -291,11 +321,11 @@ class PyCube:
         if move =='D':
             if reverse:
                 moves +='D'
-                sys.stdout.write("D\'")
+                sys.stdout.write("D\' - ", self.moves_info['D\''], '\n')
                 theta *= -1
             else:
                 moves += 'd'
-                sys.stdout.write("D")
+                sys.stdout.write("D - ", self.moves_info['D'], '\n')
                 theta *= 1
             for x in range(theta_inc):
                 for i in range(8):
@@ -372,6 +402,9 @@ class PyCube:
         # for v in left_face:
         #     print(v)
         while True:
+
+            self.display_surface.blit(self.text, self.textRect)
+            update()
     
             theta_inc = 7
             theta = pi / 2 / theta_inc
@@ -389,7 +422,7 @@ class PyCube:
                 if self._reverse:
                     pygame.event.post(pygame.event.Event(pygame.KEYDOWN, key=pygame.K_RETURN)) #add the event to the queue
                 if event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_RETURN:
+                    if event.key == pygame.K_RETURN or event.key == pygame.K_RIGHT:
                         try:
                             move = self.movements.pop(0)
                             self.last_moves.append(move)
@@ -399,34 +432,42 @@ class PyCube:
                                 reverse = True
 
                         except IndexError:
-                            print("No more moves")
+                            if self.initial_pos:
+                                print("No more moves")
+                            else:
+                                self.initial_pos = not self.initial_pos                            
                             self._reverse = False
                             self.movements = _save_moves
                             self.last_moves = []
                             break
-                        try:
-                            # Rotating about the x axis
-                            if event.key == pygame.K_UP:  # or event.key == pygame.K_w:
-                                inc_x = pi / 100
-                            if event.key == pygame.K_DOWN:  # or event.key == pygame.K_s:
-                                inc_x = -pi / 100
+                        # try:
+                        #     # Rotating about the x axis
+                        #     if event.key == pygame.K_UP:  # or event.key == pygame.K_w:
+                        #         inc_x = pi / 100
+                        #     if event.key == pygame.K_DOWN:  # or event.key == pygame.K_s:
+                        #         inc_x = -pi / 100
 
-                            # Rotating about the y axis
-                            if event.key == pygame.K_LEFT:  # or event.key == pygame.K_a:
-                                inc_y = pi / 100
-                            if event.key == pygame.K_RIGHT:  # or event.key == pygame.K_d:
-                                inc_y = -pi / 100
-                        except:
-                            pass
+                        #     # Rotating about the y axis
+                        #     if event.key == pygame.K_LEFT:  # or event.key == pygame.K_a:
+                        #         inc_y = pi / 100
+                        #     if event.key == pygame.K_RIGHT:  # or event.key == pygame.K_d:
+                        #         inc_y = -pi / 100
+                        # except:
+                        #     pass
 
+
+                        full_move = move
+                        if reverse:
+                            full_move+="'"
+
+                        if self.initial_pos:
+                            sys.stdout.write(f"{full_move} - {self.moves_info[full_move]}\n")
                         if move =='F':
                             if reverse:
                                 moves += 'F'
-                                sys.stdout.write("F\'")
                                 theta *= 1
                             else:
                                 moves += 'f'
-                                sys.stdout.write("F")
                                 theta *= -1
                             for x in range(theta_inc):
                                 for i in range(8):
@@ -457,11 +498,9 @@ class PyCube:
                         if move =='L':
                             if reverse:
                                 moves += 'L'
-                                sys.stdout.write("L\'")
                                 theta *= -1
                             else:
                                 moves += 'l'
-                                sys.stdout.write("L")
                                 theta *= 1
                             for x in range(theta_inc):
                                 for i in range(8):
@@ -492,11 +531,9 @@ class PyCube:
                         if move =='B':
                             if reverse:
                                 moves += 'B'
-                                sys.stdout.write("B\'")
                                 theta *= -1
                             else:
                                 moves += 'b'
-                                sys.stdout.write("B")
                                 theta *= 1
                             for x in range(theta_inc):
                                 for i in range(8):
@@ -527,11 +564,9 @@ class PyCube:
                         if move =='R':
                             if reverse:
                                 moves += 'R'
-                                sys.stdout.write("R\'")
                                 theta *= 1
                             else:
                                 moves += 'r'
-                                sys.stdout.write("R")
                                 theta *= -1
                             for x in range(theta_inc):
                                 for i in range(8):
@@ -562,11 +597,9 @@ class PyCube:
                         if move =='U':
                             if reverse:
                                 moves += 'U'
-                                sys.stdout.write("U\'")
                                 theta *= 1
                             else:
                                 moves += 'u'
-                                sys.stdout.write("U")
                                 theta *= -1
                             for x in range(theta_inc):
                                 for i in range(8):
@@ -597,11 +630,9 @@ class PyCube:
                         if move =='D':
                             if reverse:
                                 moves +='D'
-                                sys.stdout.write("D\'")
                                 theta *= -1
                             else:
                                 moves += 'd'
-                                sys.stdout.write("D")
                                 theta *= 1
                             for x in range(theta_inc):
                                 for i in range(8):
@@ -628,7 +659,7 @@ class PyCube:
                                             piece[i] = y_rot(piece[i], theta)
 
                                 update()
-                    if event.key == pygame.K_BACKSPACE:
+                    if event.key == pygame.K_BACKSPACE or event.key == pygame.K_LEFT:
                         if len(self.last_moves) == 0:
                             continue
                         last_move = self.last_moves.pop(-1)
@@ -642,11 +673,9 @@ class PyCube:
                         if move =='F':
                             if reverse:
                                 moves += 'F'
-                                sys.stdout.write("F\'")
                                 theta *= 1
                             else:
                                 moves += 'f'
-                                sys.stdout.write("F")
                                 theta *= -1
                             for x in range(theta_inc):
                                 for i in range(8):
@@ -677,11 +706,9 @@ class PyCube:
                         if move =='L':
                             if reverse:
                                 moves += 'L'
-                                sys.stdout.write("L\'")
                                 theta *= -1
                             else:
                                 moves += 'l'
-                                sys.stdout.write("L")
                                 theta *= 1
                             for x in range(theta_inc):
                                 for i in range(8):
@@ -712,11 +739,9 @@ class PyCube:
                         if move =='B':
                             if reverse:
                                 moves += 'B'
-                                sys.stdout.write("B\'")
                                 theta *= -1
                             else:
                                 moves += 'b'
-                                sys.stdout.write("B")
                                 theta *= 1
                             for x in range(theta_inc):
                                 for i in range(8):
@@ -747,11 +772,9 @@ class PyCube:
                         if move =='R':
                             if reverse:
                                 moves += 'R'
-                                sys.stdout.write("R\'")
                                 theta *= 1
                             else:
                                 moves += 'r'
-                                sys.stdout.write("R")
                                 theta *= -1
                             for x in range(theta_inc):
                                 for i in range(8):
@@ -782,11 +805,9 @@ class PyCube:
                         if move =='U':
                             if reverse:
                                 moves += 'U'
-                                sys.stdout.write("U\'")
                                 theta *= 1
                             else:
                                 moves += 'u'
-                                sys.stdout.write("U")
                                 theta *= -1
                             for x in range(theta_inc):
                                 for i in range(8):
@@ -817,11 +838,9 @@ class PyCube:
                         if move =='D':
                             if reverse:
                                 moves +='D'
-                                sys.stdout.write("D\'")
                                 theta *= -1
                             else:
                                 moves += 'd'
-                                sys.stdout.write("D")
                                 theta *= 1
                             for x in range(theta_inc):
                                 for i in range(8):
