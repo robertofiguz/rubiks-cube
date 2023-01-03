@@ -39,3 +39,7 @@ Now that all faces were scanned you can solve the cube following the text instru
 Press __Enter__ or __Right Arrow__ to see the next move.
 
 Press __Backspace__ or __Left Arrow__ to redo the last move.
+
+
+URL for working rubik solver fork:
+[rubik solver](https://github.com/robertofiguz/python-rubik)
