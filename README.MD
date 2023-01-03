@@ -13,6 +13,7 @@ options:
 ```
 ## Color Calibration
 To calibrate the colors follow the instructions in the top left corner.
+
 ![Color Calibration](resources/calibration.gif)
 
 You can select the color on the original camera image and/or adjust the limits as you wish.
@@ -21,6 +22,7 @@ When you are happy with the color calibration press __ENTER__ to calibrate the n
 
 ## Face and Color Detection
 Start with the white face facing the camera and the green face on top.
+
 ![Face Detection](resources/face-detect.gif)
 
 Follow the instructions on the bottom left until every cube face is detected.
@@ -29,6 +31,7 @@ If you notice that any face was not detected correctly you can press __BACKSPACE
 
 ## Solve the cube
 Now that all faces were scanned you can solve the cube following the text instructions on the terminal or replicating the movements on the animated cube
+
 ![Animated Cube](resources/animated-cube.gif)
 
 ![Text Instructions](resources/text-instructions.png)
