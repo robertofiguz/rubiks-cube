@@ -240,12 +240,14 @@ def launch_cube(solution):
     result_solution = []
     for i in solution:
         i = str(i)
-        result_solution.append(i)
         try:
             if i[1] == '2':
                 result_solution.append(i[0])
+                result_solution.append(i[0])
+            else:
+                result_solution.append(i)
         except:
-            pass
+            result_solution.append(i)
     cube.run(result_solution)
 
 
