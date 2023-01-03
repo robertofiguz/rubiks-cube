@@ -1,16 +1,38 @@
 # Rubiks cube
 
-## Objetivos:
-- Deteção das faces do cubo 
-- Deteção das cores - identificação da face usando a cor central
-- Tradução de imagem para a cena do algoritmo (cube notation)
-- Algoritmo de resolução
-- Calibração da camera usando o cubo
-- Deteção e tracking do cubo em 3D 
-- Aplicação das setas para resolução do cubo
-- Animação 3D da resolução
+Rubik's cube solver developed in Python, OpenCV & OpenGL/Pygame
 
-## Maybe:
-- Prever faces do cubo sem saber todas as faces
-- deteção de 3 faces em simultaneo
-- capturar faces antes da deteção para o user não ter de esperar pelo processamento
+## How to run
+
+```
+usage: main.py [-h] [-c]
+
+options:
+  -h, --help       show this help message and exit
+  -c, --calibrate  Calibrate the colors.
+```
+## Color Calibration
+To calibrate the colors follow the instructions in the top left corner.
+![Color Calibration](resources/calibration.gif)
+
+You can select the color on the original camera image and/or adjust the limits as you wish.
+
+When you are happy with the color calibration press __ENTER__ to calibrate the next color.
+
+## Face and Color Detection
+Start with the white face facing the camera and the green face on top.
+![Face Detection](resources/face-detect.gif)
+
+Follow the instructions on the bottom left until every cube face is detected.
+
+If you notice that any face was not detected correctly you can press __BACKSPACE__ to revert the last face scan.
+
+## Solve the cube
+Now that all faces were scanned you can solve the cube following the text instructions on the terminal or replicating the movements on the animated cube
+![Animated Cube](resources/animated-cube.gif)
+
+![Text Instructions](resources/text-instructions.png)
+
+Press __Enter__ or __Right Arrow__ to see the next move.
+
+Press _Backspace__ or __Left Arrow__ to redo the last move.
