@@ -7,7 +7,7 @@ import cv2
 import numpy as np
 import json
 from functools import partial
-
+from numpy import mean
 COLORS = {"White": (255, 255, 255), "Yellow": (0, 255, 255), "Orange": (0, 165, 255), "Red": (0, 0, 255), "Green": (0, 255, 0), "Blue": (255, 0, 0)}
 
 
@@ -52,7 +52,7 @@ def mouseClick(event, x, y, flags, param, window_name, img_dict):
             cv2.setTrackbarPos(limit, window_name, limits[limit])
 
 
-def run():
+def run(colors_class):
     
 
     # Create windows
@@ -62,8 +62,6 @@ def run():
     cv2.namedWindow(name_original, cv2.WINDOW_AUTOSIZE)
 
 
-    # Get limits from file
-    file_name = 'resources/color-calibration.json'
 
     limits = {'B': {'max': 200, 'min': 100}, 'G': {'max': 200, 'min': 100}, 'R': {'max': 200, 'min': 100}}
 
@@ -82,8 +80,10 @@ def run():
 
     # Select camera and get first frame
     capture = cv2.VideoCapture(0)
+    capture.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
+    capture.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
     _, image = capture.read()
-    image = cv2.flip(image, 1)
+    #image = cv2.flip(image, 1)
     img_dict = {'image': image}
 
 
@@ -110,7 +110,7 @@ def run():
         
         # Update image from camera
         _, image = capture.read()
-        image = cv2.flip(image, 1)
+        #image = cv2.flip(image, 1)
         img_dict['image'] = image
         cv2.putText(image, f"Let's Calibrate {colors[color]} color", (20, 20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, COLORS[colors[color]], 2)
         cv2.imshow(name_original, image)
@@ -134,8 +134,14 @@ def run():
                                 'R': {'max': max[2], 'min': min[2]}}
 
             if color == "O":
-                with open(file_name, 'w') as file_handle:
-                    json.dump(dict, file_handle, indent=4)
+                for i in dict:
+                    color = colors[i]
+                    values = dict[i]
+                    max = (values['B']['max'], values['G']['max'], values['R']['max'])
+                    min = (values['B']['min'], values['G']['min'], values['R']['min'])
+                    print(f"{color} max: {max} min: {min}")
+                    average = (mean([max[0], min[0]]), mean([max[1], min[1]]), mean([max[2], min[2]]))
+                    colors_class.update_prominent_color(color.lower(), average)
                 cv2.destroyAllWindows()
                 return
             color_calibrated = True

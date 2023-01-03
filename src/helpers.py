@@ -1,18 +1,17 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-# vim: fenc=utf-8 ts=4 sw=4 et
-
 import math
 
-prominent_color_palette = {
-    'red'   : (0, 0, 255),
-    'orange': (0, 130, 255),
-    'blue'  : (255, 0, 0),
-    'green' : (0, 255, 0),
-    'white' : (255, 255, 255),
-    'yellow': (0, 255, 255)
-}
-
+class Colors:
+     def __init__(self):
+          self.prominent_color_palette = {
+          'red'   : (55, 46, 194),
+          'orange': (25, 90, 225),
+          'blue'  : (141, 56, 15),
+          'green' : (25, 103, 25),
+          'white' : (222, 207, 203),
+          'yellow': (73, 191, 219)
+          }
+     def update_prominent_color(self, color, new_color):
+          self.prominent_color_palette[color] = new_color
 instructions = {
     'white': 'Show the white face with the green on top',
     'orange': 'Rotate the cube 90 to the right',

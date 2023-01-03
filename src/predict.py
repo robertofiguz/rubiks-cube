@@ -1,10 +1,10 @@
 import helpers
 
         
-def predicted_color(color):
+def predicted_color(color,colors):
     converted_color = helpers.bgr2lab(color)
     distances = []
-    for color_name, color_bgr in helpers.prominent_color_palette.items():
+    for color_name, color_bgr in colors.prominent_color_palette.items():
         distances.append({
             'color_name': color_name,
             'color_bgr': color_bgr,

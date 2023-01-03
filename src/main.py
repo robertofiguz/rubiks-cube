@@ -11,6 +11,24 @@ from rubik_solver import utils
 from PyCube import PyCube
 import calibrate
 class Face:
+    def __init__(self, name,class_colors):
+        self.class_colors = class_colors
+        self.face = [[None,None,None],
+                     [None,None,None],
+                     [None,None,None]]
+        self.name = name
+        self.scanned = False
+
+        self.rotations = {"white": {"white": "","yellow": "left-2","blue":"up-1","green":"down-1","orange":"left-1","red":"right-1"},
+                          "yellow":{"white": "left-2","yellow": "","blue":"left-2", "green":"left-2","orange":"left-3","red":"left-1"},
+                          "blue":{"white": "up-1","yellow": "up-1","blue":"","green":"down-2","orange":"up-1","red":"up-1"},
+                          "green":{"white": "up-1","yellow": "up-1","blue":"up-2","green":"","orange":"up-1","red":"up-1"},
+                          "orange":{"white": "left-1","yellow": "left-1","blue":"right-1","green":"right-1","orange":"","red":"right-2"},
+                          "red":{"white": "left-1","yellow": "right-1","blue":"left-1","green":"left-1","orange":"left-2","red":""}
+                         }
+
+        self.colors = {"White": (255, 255, 255), "Yellow": (0, 255, 255), "Orange": (0, 165, 255), "Red": (0, 0, 255), "Green": (0, 255, 0), "Blue": (255, 0, 0)}
+    
     def find_contours(self, dilatedFrame):
         contours, hierarchy = cv2.findContours(dilatedFrame, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
         final_contours = []
@@ -104,23 +122,6 @@ class Face:
             cv2.rectangle(frame, (x, y), (x + w, y + h), (255,0,255), 2)
         return frame
 
-    def __init__(self, name):
-        
-        self.face = [[None,None,None],
-                     [None,None,None],
-                     [None,None,None]]
-        self.name = name
-        self.scanned = False
-
-        self.rotations = {"white": {"white": "","yellow": "left-2","blue":"up-1","green":"down-1","orange":"left-1","red":"right-1"},
-                          "yellow":{"white": "left-2","yellow": "","blue":"left-2", "green":"left-2","orange":"left-3","red":"left-1"},
-                          "blue":{"white": "up-1","yellow": "up-1","blue":"","green":"down-2","orange":"up-1","red":"up-1"},
-                          "green":{"white": "up-1","yellow": "up-1","blue":"up-2","green":"","orange":"up-1","red":"up-1"},
-                          "orange":{"white": "left-1","yellow": "left-1","blue":"right-1","green":"right-1","orange":"","red":"right-2"},
-                          "red":{"white": "left-1","yellow": "right-1","blue":"left-1","green":"left-1","orange":"left-2","red":""}
-                         }
-
-        self.colors = {"White": (255, 255, 255), "Yellow": (0, 255, 255), "Orange": (0, 165, 255), "Red": (0, 0, 255), "Green": (0, 255, 0), "Blue": (255, 0, 0)}
 
 
     def get_arrow(self,x,y,w,h,center_x,center_y,middle_color,wanted_color):
@@ -181,7 +182,7 @@ class Face:
                 center_x = x + w / 2
                 center_y = y + h / 2
                 color = frame[int(center_y), int(center_x)]
-                middle_color = predicted_color(color)
+                middle_color = predicted_color(color,self.class_colors)
 
                 start_point, end_point, times = self.get_arrow(x,y,w,h,center_x,center_y,middle_color,wanted_color)
                 frame = cv2.arrowedLine(frame, start_point, end_point, self.colors[wanted_color.capitalize()], 5)
@@ -198,7 +199,7 @@ class Face:
                         #get the color of the center of the contour
                         color = frame[int(center_y), int(center_x)]
                         #draw a circle on the center of the contour
-                        prediction = predicted_color(color)
+                        prediction = predicted_color(color,self.class_colors)
                         self.update(idx,prediction)
                         #write the color name on the contour
                         cv2.putText(frame, prediction, (x, y), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0), 2)
@@ -214,18 +215,8 @@ class Face:
                 sys.exit()
             elif key_pressed == 8 or key_pressed == 127:
                 return True
-            ###############
+            
             if self.scanned:
-                # if self.name == 'green':
-                #     cv2.putText(frame, 'Reading was done! ENTER do proceed', (400, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
-                #     image=draw_2d_cube_state(frame, faces)
-                #     cv2.imshow('frame', image)
-                #     key_pressed = cv2.waitKey(0) & 0xFF
-
-                #     if key_pressed == 8:
-                #         return True
-                #     elif key_pressed == 13:
-                #         return False
                 return False
         
 
@@ -310,20 +301,23 @@ calibrate_colors = args.calibrate
 
 
 if __name__ == '__main__':
+    colors = helpers.Colors()
     if calibrate_colors:
-        calibrate.run()
+        calibrate.run(colors)
+    print('colors calibrated')
+    print(colors.prominent_color_palette)
         
     #start camera
     frame1 = []
     frame1_contours = []
 
     faces ={
-        'white': Face('white'),
-        'orange': Face('orange'),
-        'yellow': Face('yellow'),
-        'red': Face('red'),
-        'blue': Face('blue'),
-        'green': Face('green'),
+        'white': Face('white', colors),
+        'orange': Face('orange',colors),
+        'yellow': Face('yellow',colors),
+        'red': Face('red',colors),
+        'blue': Face('blue',colors),
+        'green': Face('green',colors),
     }
 
     faces_list = ["white", "orange", "yellow", "red", "blue", "green"]
@@ -333,7 +327,7 @@ if __name__ == '__main__':
         redo = faces[key].scan(key)
         if redo and idx-1 >= 0:
             last_key = faces_list[idx-1]
-            faces[last_key] = Face(last_key)
+            faces[last_key] = Face(last_key,colors)
             idx -= 1
         elif not redo:
             idx += 1
@@ -373,6 +367,7 @@ if __name__ == '__main__':
         print(f"There are {cube_string.count('w')} white, {cube_string.count('o')} orange, {cube_string.count('g')} green, {cube_string.count('r')} red, {cube_string.count('b')} blue, {cube_string.count('y')} yellow squares")
         print("There should be 9 of each color")
         print("Please scan the cube again")
+
     #try:
     #    solution = kociemba.solve(cube_string.strip())
     #except ValueError:

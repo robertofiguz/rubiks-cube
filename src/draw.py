@@ -5,17 +5,17 @@ def draw_2d_cube_state(image, faces):
     """
     We're gonna display the visualization like so:
                 -----
-                | W W W |
-                | W W W |
-                | W W W |
+                | Y Y Y |
+                | Y Y Y |
+                | Y Y Y |
         -----   -----   -----   -----
-        | O O O | G G G | R R R | B B B |
-        | O O O | G G G | R R R | B B B |
-        | O O O | G G G | R R R | B B B |
+        | B B B | R R R | G G G | O O O |
+        | B B B | R R R | G G G | O O O |
+        | B B B | R R R | G G G | O O O |
         -----   -----   -----   -----
-                | Y Y Y |
-                | Y Y Y |
-                | Y Y Y |
+                | W W W |
+                | W W W |
+                | W W W |
                 -----
     """
     grid = {
