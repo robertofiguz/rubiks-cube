@@ -1,17 +1,24 @@
 import math
-
+import json
 class Colors:
      def __init__(self):
           self.prominent_color_palette = {
-          'red'   : (55, 46, 194),
+          'red'   : (0, 0, 255),
           'orange': (25, 90, 225),
           'blue'  : (141, 56, 15),
           'green' : (25, 103, 25),
           'white' : (222, 207, 203),
           'yellow': (73, 191, 219)
           }
+          try:
+               #load from file
+               with open('resources/colors.json', 'r') as f:
+                    self.prominent_color_palette = json.load(f)
+          except:
+               pass
      def update_prominent_color(self, color, new_color):
           self.prominent_color_palette[color] = new_color
+          
 instructions = {
     'white': 'Show the white face with the green on top',
     'orange': 'Rotate the cube 90 to the right',
@@ -20,6 +27,7 @@ instructions = {
     'blue': 'Rotate the cube 90 to the right and 90 up',
     'green': 'Rotate the cube 180 down'
 }
+
 # Taken from https://stackoverflow.com/a/16020102
 def bgr2lab(inputColor):
     """Convert BGR to LAB."""

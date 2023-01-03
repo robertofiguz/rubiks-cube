@@ -6,7 +6,6 @@ from predict import predicted_color
 import numpy as np
 from draw import draw_2d_cube_state
 import helpers
-import kociemba
 from rubik_solver import utils
 from PyCube import PyCube
 import calibrate
@@ -32,23 +31,22 @@ class Face:
     def find_contours(self, dilatedFrame):
         contours, hierarchy = cv2.findContours(dilatedFrame, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
         final_contours = []
-        # Step 1/4: filter all contours to only those that are square-ish shapes.
+        #Filter contours to find squares
         for contour in contours:
             perimeter = cv2.arcLength(contour, True)
             approx = cv2.approxPolyDP(contour, 0.1 * perimeter, True)
             if len (approx) == 4:
                 area = cv2.contourArea(contour)
                 (x, y, w, h) = cv2.boundingRect(approx)
-                # Find aspect ratio of boundary rectangle around the countours.
+                # Find aspect ratio of the shape
                 ratio = w / float(h)
-                # Check if contour is close to a square.
+                # Check if contour is close to a square
                 if ratio >= 0.8 and ratio <= 1.2 and w >= 30 and w <= 60 and area / (w * h) > 0.4:
                     final_contours.append((x, y, w, h))
-        # Return early if we didn't found 9 or more contours.
+        # exit early if there aren't enough contours
         if len(final_contours) < 9:
             return final_contours
-        # Step 2/4: Find the contour that has 9 neighbors (including itself)
-        # and return all of those neighbors.
+        # Find the contour that has 9 neighbors 
         found = False
         contour_neighbors = {}
         for index, contour in enumerate(final_contours):
@@ -57,13 +55,6 @@ class Face:
             center_x = x + w / 2
             center_y = y + h / 2
             radius = 1.5
-            # Create 9 positions for the current contour which are the
-            # neighbors. We'll use this to check how many neighbors each contour
-            # has. The only way all of these can match is if the current contour
-            # is the center of the cube. If we found the center, we also know
-            # all the neighbors, thus knowing all the contours and thus knowing
-            # this shape can be considered a 3x3x3 cube. When we've found those
-            # contours, we sort them and return them.
             neighbor_positions = [
                 # top left
                 [(center_x - w * radius), (center_y - h * radius)],
@@ -87,16 +78,8 @@ class Face:
             for neighbor in final_contours:
                 (x2, y2, w2, h2) = neighbor
                 for (x3, y3) in neighbor_positions:
-                    # The neighbor_positions are located in the center of each
-                    # contour instead of top-left corner.
-                    # logic: (top left < center pos) and (bottom right > center pos)
                     if (x2 < x3 and y2 < y3) and (x2 + w2 > x3 and y2 + h2 > y3):
                         contour_neighbors[index].append(neighbor)
-        # Step 3/4: Now that we know how many neighbors all contours have, we'll
-        # loop over them and find the contour that has 9 neighbors, which
-        # includes itself. This is the center piece of the cube. If we come
-        # across it, then the 'neighbors' are actually all the contours we're
-        # looking for.
         for (contour, neighbors) in contour_neighbors.items():
             if len(neighbors) == 9:
                 found = True
@@ -104,10 +87,7 @@ class Face:
                 break
         if not found:
             return []
-        # Step 4/4: When we reached this part of the code we found a cube-like
-        # contour. The code below will sort all the contours on their X and Y
-        # values from the top-left to the bottom-right.
-        # Sort contours on the y-value first.
+        # The code below will sort all the contours on their X and Y
         y_sorted = sorted(final_contours, key=lambda item: item[1])
         # Split into 3 rows and sort each row on the x-value.
         top_row = sorted(y_sorted[0:3], key=lambda item: item[0])
@@ -166,7 +146,7 @@ class Face:
             cannyFrame = cv2.Canny(blurredFrame, 30, 60, 3)
             kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (9, 9))
             dilatedFrame = cv2.dilate(cannyFrame, kernel)
-            ##############
+            
             #find contours and draw them
             contours = self.find_contours(dilatedFrame)
             frame = self.draw_contours(frame,contours)
@@ -245,27 +225,6 @@ class Face:
         
     def flatten(self):
         return [color for row in self.face for color in row]
-    def get_face(self):
-        #print a 3x3 grid text representation of the face
-        text = '| {} | {} | {} |\n| {} | {} | {} |\n| {} | {} | {} |\n'.format(*self.flatten())
-        
-        #make tree rows with equal length columns for each color
-        rows = text.split('\n')
-        rows = [row.split('|') for row in rows]
-        rows = [[col.strip() for col in row] for row in rows]
-        rows = [[col.ljust(10) for col in row] for row in rows]
-        rows = ['|'.join(row) for row in rows]
-        text = '\n'.join(rows)
-        #make text color coded
-        text = text.replace('red', '\033[91mred\033[0m')
-        text = text.replace('orange', '\033[93morange\033[0m')
-        text = text.replace('blue', '\033[94mblue\033[0m')
-        text = text.replace('green', '\033[92mgreen\033[0m')
-        text = text.replace('white', '\033[97mwhite\033[0m')
-        text = text.replace('yellow', '\033[93myellow\033[0m')
-        return text
-    def is_scanned(self):
-        return self.scanned
 
 
 def all_scanned(faces):
@@ -281,16 +240,15 @@ def launch_cube(solution):
     result_solution = []
     for i in solution:
         i = str(i)
+        result_solution.append(i)
         try:
             if i[1] == '2':
                 result_solution.append(i[0])
-                result_solution.append(i[0])
-            else:
-                result_solution.append(i)
         except:
-            result_solution.append(i)
+            pass
     cube.run(result_solution)
-    
+
+
 ## Define command-line arguments
 parser = argparse.ArgumentParser()
 parser.add_argument("-c", "--calibrate", action='store_true', default=False,
@@ -304,12 +262,6 @@ if __name__ == '__main__':
     colors = helpers.Colors()
     if calibrate_colors:
         calibrate.run(colors)
-    print('colors calibrated')
-    print(colors.prominent_color_palette)
-        
-    #start camera
-    frame1 = []
-    frame1_contours = []
 
     faces ={
         'white': Face('white', colors),
@@ -338,7 +290,7 @@ if __name__ == '__main__':
         cube_string += "".join(faces[i].flatten())
     
     
-    ## For rubik_solver library
+    # For rubik_solver library
     cube_string = cube_string.replace("white", "w")
     cube_string = cube_string.replace("orange", "o")
     cube_string = cube_string.replace("green", "g")
@@ -346,34 +298,18 @@ if __name__ == '__main__':
     cube_string = cube_string.replace("blue", "b")
     cube_string = cube_string.replace("yellow", "y")
 
-    ## For kociemba library
-    #cube_string = cube_string.replace("white", "U")
-    #cube_string = cube_string.replace("orange", "L")
-    #cube_string = cube_string.replace("green", "F")
-    #cube_string = cube_string.replace("red", "R")
-    #cube_string = cube_string.replace("blue", "B")
-    #cube_string = cube_string.replace("yellow", "D")
-
     print("Solving the cube...")
 
     #solve the cube
     print(cube_string)
-    # cube_string = "wowgybwyogygybyoggrowbrgywrborwggybrbwororbwborgowryby"
-    #print(cube_string)
+
+    
     try:
         solution = utils.solve(cube_string, 'Kociemba')
+        launch_cube(solution) 
     except Exception:
         print("Cubestring not valid: ", cube_string)
         print(f"There are {cube_string.count('w')} white, {cube_string.count('o')} orange, {cube_string.count('g')} green, {cube_string.count('r')} red, {cube_string.count('b')} blue, {cube_string.count('y')} yellow squares")
         print("There should be 9 of each color")
-        print("Please scan the cube again")
-
-    #try:
-    #    solution = kociemba.solve(cube_string.strip())
-    #except ValueError:
-    #    print("Cubestring not valid: ", cube_string)
-    launch_cube(solution) 
-    print("finished solving")
-    print(solution)
-    print("finished scan")
+        print("Please scan the cube again") 
     cv2.waitKey(0)

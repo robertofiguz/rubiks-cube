@@ -142,6 +142,9 @@ def run(colors_class):
                     print(f"{color} max: {max} min: {min}")
                     average = (mean([max[0], min[0]]), mean([max[1], min[1]]), mean([max[2], min[2]]))
                     colors_class.update_prominent_color(color.lower(), average)
+                    #save to file
+                with open('resources/colors.json', 'w') as f:
+                    json.dump(colors_class.prominent_color_palette, f)
                 cv2.destroyAllWindows()
                 return
             color_calibrated = True
