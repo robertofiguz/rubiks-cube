@@ -38,4 +38,4 @@ Now that all faces were scanned you can solve the cube following the text instru
 
 Press __Enter__ or __Right Arrow__ to see the next move.
 
-Press _Backspace__ or __Left Arrow__ to redo the last move.
+Press __Backspace__ or __Left Arrow__ to redo the last move.
