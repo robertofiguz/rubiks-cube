@@ -125,18 +125,10 @@ class Face:
         return start_point, end_point, times
         
         
-    def scan(self, wanted_color):
+    def scan(self, cap, wanted_color):
         #while not enter
         while True:
-            #open camera if not open
-            try : 
-                cap.isOpened()
-            except Exception:
-                cap = cv2.VideoCapture(0)
-                cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
-                cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
 
-                time.sleep(0.5)
             #read frame
             ret, frame = cap.read()
                         
@@ -276,9 +268,16 @@ if __name__ == '__main__':
 
     faces_list = ["white", "orange", "yellow", "red", "blue", "green"]
     idx = 0
+
+    #open camera
+    cap = cv2.VideoCapture(0)
+    cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
+    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
+    time.sleep(0.5)
+
     while not all_scanned(faces):
         key = faces_list[idx]
-        redo = faces[key].scan(key)
+        redo = faces[key].scan(cap, key)
         if redo and idx-1 >= 0:
             last_key = faces_list[idx-1]
             faces[last_key] = Face(last_key,colors)
