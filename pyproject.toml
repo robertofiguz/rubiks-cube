@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "rubiks-cube"
+version = "0.1.0"
+description = "Rubik's cube solver developed in Python, OpenCV & OpenGL/Pygame"
+readme = "README.MD"
+requires-python = ">=3.8"
+authors = [
+    { name = "Roberto Figueiredo" , email = "robertof@ua.pt" },
+    { name = "Henrique Sousa", email = "henrique@sousadev.com"}
+]
+dependencies = [
+    "numpy==1.26.0",
+    "opencv-python>=4.8.1.78",
+    "pygame>=2.1.2",
+    "PyOpenGL==3.1.6",
+    "rubik_solver @ git+https://github.com/robertofiguz/python-rubik@master"
+]
+

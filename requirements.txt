@@ -1,5 +1,0 @@
-numpy==1.22.3
-opencv_python==4.6.0.66
-pygame==2.1.2
-PyOpenGL==3.1.6
-git+https://github.com/robertofiguz/python-rubik@master
